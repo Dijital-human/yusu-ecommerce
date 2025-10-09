@@ -217,20 +217,34 @@
             </div>
         </div>
 
-        <!-- Admin Login / Admin girişi -->
-        <div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg border border-yellow-200 dark:border-yellow-700">
-            <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-                Admin Access
+        <!-- Role Selection / Rol seçimi -->
+        <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-700">
+            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                Quick Access
             </h3>
-            <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
-                Admin panel access for site management
+            <p class="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                Select your role to access the appropriate dashboard
             </p>
-            <button
-                onclick="showAdminLogin()"
-                class="w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors duration-200"
-            >
-                Admin Login
-            </button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button
+                    onclick="quickLogin('buyer')"
+                    class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors duration-200"
+                >
+                    🛒 Buyer Login
+                </button>
+                <button
+                    onclick="quickLogin('seller')"
+                    class="bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors duration-200"
+                >
+                    🏪 Seller Login
+                </button>
+                <button
+                    onclick="quickLogin('admin')"
+                    class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200"
+                >
+                    👨‍💼 Admin Login
+                </button>
+            </div>
         </div>
 
         <!-- Back to Home / Ana səhifəyə qayıt -->
@@ -278,22 +292,119 @@
             document.getElementById('registerForm').classList.remove('hidden');
         }
 
-        function showAdminLogin() {
-            const email = prompt('Admin Email:');
-            const password = prompt('Admin Password:');
+        // Quick login function / Sürətli giriş funksiyası
+        function quickLogin(role) {
+            let credentials = {};
             
-            if (email === 'admin@example.com' && password === 'admin123') {
-                localStorage.setItem('user', JSON.stringify({
-                    id: 'admin-1',
-                    name: 'Admin User',
-                    email: 'admin@example.com',
-                    role: 'admin',
-                    loginTime: new Date().toISOString()
-                }));
-                window.location.href = '/admin.html';
-            } else {
-                alert('Invalid admin credentials');
+            switch (role) {
+                case 'buyer':
+                    credentials = {
+                        email: 'buyer@example.com',
+                        password: 'buyer123',
+                        name: 'John Buyer',
+                        id: 'buyer-1'
+                    };
+                    break;
+                case 'seller':
+                    credentials = {
+                        email: 'seller@example.com',
+                        password: 'seller123',
+                        name: 'Jane Seller',
+                        id: 'seller-1'
+                    };
+                    break;
+                case 'admin':
+                    credentials = {
+                        email: 'admin@example.com',
+                        password: 'admin123',
+                        name: 'Admin User',
+                        id: 'admin-1'
+                    };
+                    break;
             }
+            
+            const email = prompt(`${role.charAt(0).toUpperCase() + role.slice(1)} Email:`, credentials.email);
+            const password = prompt(`${role.charAt(0).toUpperCase() + role.slice(1)} Password:`, credentials.password);
+            
+            if (email === credentials.email && password === credentials.password) {
+                const user = {
+                    id: credentials.id,
+                    name: credentials.name,
+                    email: credentials.email,
+                    role: role,
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                // Redirect based on role / Rola görə yönləndir
+                switch (role) {
+                    case 'buyer':
+                        window.location.href = '/';
+                        break;
+                    case 'seller':
+                        // Check if seller is approved / Satıcının təsdiq edilib-edilmədiyini yoxla
+                        checkSellerApproval(user);
+                        break;
+                    case 'admin':
+                        window.location.href = '/admin.html';
+                        break;
+                }
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        // Check seller approval / Satıcı təsdiqini yoxla
+        function checkSellerApproval(user) {
+            // Mock seller approval status / Mock satıcı təsdiq statusu
+            const sellerApprovalStatus = {
+                'seller-1': { approved: true, approvedAt: '2025-01-08T10:00:00Z' },
+                'seller-2': { approved: false, pendingAt: '2025-01-09T09:00:00Z' }
+            };
+            
+            const approval = sellerApprovalStatus[user.id];
+            
+            if (approval && approval.approved) {
+                // Seller is approved, redirect to seller dashboard / Satıcı təsdiq edilib, seller paneline yönləndir
+                window.location.href = '/seller.html';
+            } else {
+                // Seller is not approved, show pending message / Satıcı təsdiq edilməyib, gözləyən mesaj göstər
+                showSellerPendingMessage(user);
+            }
+        }
+
+        // Show seller pending message / Satıcı gözləyən mesajını göstər
+        function showSellerPendingMessage(user) {
+            const pendingHtml = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+                        <div class="text-center">
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900 mb-4">
+                                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                Seller Account Pending
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Your seller account is under review. Admin will approve your account soon.
+                            </p>
+                            <div class="flex space-x-3">
+                                <button onclick="logout()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400">
+                                    Logout
+                                </button>
+                                <button onclick="checkSellerApproval(${JSON.stringify(user).replace(/"/g, '&quot;')})" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+                                    Check Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', pendingHtml);
         }
 
         // Handle login / Girişi idarə et
