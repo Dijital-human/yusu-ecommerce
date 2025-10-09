@@ -151,6 +151,20 @@
                     />
                 </div>
                 <div>
+                    <label for="registerRole" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Account Type
+                    </label>
+                    <select
+                        id="registerRole"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    >
+                        <option value="">Select account type</option>
+                        <option value="buyer">🛒 Buyer - I want to buy products</option>
+                        <option value="seller">🏪 Seller - I want to sell products</option>
+                    </select>
+                </div>
+                <div>
                     <label for="registerPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Password
                     </label>
@@ -314,6 +328,7 @@
             const firstName = document.getElementById('registerFirstName').value;
             const lastName = document.getElementById('registerLastName').value;
             const email = document.getElementById('registerEmail').value;
+            const role = document.getElementById('registerRole').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             
@@ -322,17 +337,23 @@
                 return;
             }
             
+            if (!role) {
+                alert('Please select account type');
+                return;
+            }
+            
             if (firstName && lastName && email && password) {
                 const user = {
                     id: 'user-' + Date.now(),
                     name: firstName + ' ' + lastName,
                     email: email,
-                    role: 'user',
-                    loginTime: new Date().toISOString()
+                    role: role,
+                    loginTime: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
                 };
                 
                 localStorage.setItem('user', JSON.stringify(user));
-                alert('Registration successful!');
+                alert(`Registration successful! Welcome as ${role === 'buyer' ? 'Buyer' : 'Seller'}!`);
                 window.location.href = '/';
             } else {
                 alert('Please fill in all fields');

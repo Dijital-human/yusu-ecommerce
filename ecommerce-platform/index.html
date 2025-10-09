@@ -480,6 +480,9 @@
                 } else {
                     document.getElementById('adminLink').classList.add('hidden');
                 }
+                
+                // Show role-specific features / Rol-ə xas xüsusiyyətləri göstər
+                showRoleSpecificFeatures(user.role);
             } else {
                 document.getElementById('loginButton').classList.remove('hidden');
                 document.getElementById('userInfo').classList.add('hidden');
@@ -498,6 +501,50 @@
             localStorage.removeItem('user');
             checkUserStatus();
             alert('Logged out successfully!');
+        }
+
+        // Show role-specific features / Rol-ə xas xüsusiyyətləri göstər
+        function showRoleSpecificFeatures(role) {
+            // Remove existing role-specific elements / Mövcud rol-ə xas elementləri sil
+            const existingRoleElements = document.querySelectorAll('.role-specific');
+            existingRoleElements.forEach(el => el.remove());
+            
+            if (role === 'buyer') {
+                // Add buyer-specific features / Alıcı-ə xas xüsusiyyətlər əlavə et
+                addBuyerFeatures();
+            } else if (role === 'seller') {
+                // Add seller-specific features / Satıcı-ə xas xüsusiyyətlər əlavə et
+                addSellerFeatures();
+            } else if (role === 'admin') {
+                // Admin features are already handled / Admin xüsusiyyətləri artıq idarə olunur
+            }
+        }
+
+        // Add buyer features / Alıcı xüsusiyyətləri əlavə et
+        function addBuyerFeatures() {
+            const nav = document.querySelector('nav .hidden.md\\:flex');
+            const buyerLink = document.createElement('a');
+            buyerLink.href = '#orders';
+            buyerLink.className = 'text-gray-700 dark:text-gray-300 hover:text-blue-600 role-specific';
+            buyerLink.innerHTML = '🛒 My Orders';
+            nav.appendChild(buyerLink);
+        }
+
+        // Add seller features / Satıcı xüsusiyyətləri əlavə et
+        function addSellerFeatures() {
+            const nav = document.querySelector('nav .hidden.md\\:flex');
+            
+            const sellerDashboardLink = document.createElement('a');
+            sellerDashboardLink.href = '/seller.html';
+            sellerDashboardLink.className = 'text-gray-700 dark:text-gray-300 hover:text-blue-600 role-specific';
+            sellerDashboardLink.innerHTML = '🏪 Seller Dashboard';
+            nav.appendChild(sellerDashboardLink);
+            
+            const addProductLink = document.createElement('a');
+            addProductLink.href = '/seller.html#add-product';
+            addProductLink.className = 'text-gray-700 dark:text-gray-300 hover:text-blue-600 role-specific';
+            addProductLink.innerHTML = '➕ Add Product';
+            nav.appendChild(addProductLink);
         }
 
         // Initialize user status / İstifadəçi statusunu başlat

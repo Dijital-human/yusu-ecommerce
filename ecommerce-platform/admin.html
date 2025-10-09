@@ -66,6 +66,10 @@
                     <button onclick="showSection('orders')" class="w-full text-left px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         📦 Orders
                     </button>
+                    <button onclick="showSection('pending-products')" class="w-full text-left px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        ⏳ Pending Products
+                        <span id="pendingCount" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">0</span>
+                    </button>
                     <button onclick="showSection('customers')" class="w-full text-left px-3 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                         👥 Customers
                     </button>
@@ -282,6 +286,26 @@
                 </div>
             </div>
 
+            <!-- Pending Products Section / Gözləyən məhsullar bölməsi -->
+            <div id="pending-products" class="p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Pending Products Review</h1>
+                    <div class="flex space-x-2">
+                        <button onclick="refreshPendingProducts()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            🔄 Refresh
+                        </button>
+                        <button onclick="approveAllProducts()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            ✅ Approve All
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Pending products list / Gözləyən məhsullar siyahısı -->
+                <div class="space-y-6" id="pendingProductsList">
+                    <!-- Pending products will be loaded here / Gözləyən məhsullar burada yüklənəcək -->
+                </div>
+            </div>
+
             <!-- Other sections will be similar / Digər bölmələr oxşar olacaq -->
             <div id="customers" class="p-6 hidden">
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Customers</h1>
@@ -343,7 +367,7 @@
         // Section switching / Bölmə dəyişdiricisi
         function showSection(sectionName) {
             // Hide all sections / Bütün bölmələri gizlə
-            const sections = ['dashboard', 'products', 'orders', 'customers', 'analytics', 'settings'];
+            const sections = ['dashboard', 'products', 'orders', 'pending-products', 'customers', 'analytics', 'settings'];
             sections.forEach(section => {
                 document.getElementById(section).classList.add('hidden');
             });
@@ -376,6 +400,9 @@
                     break;
                 case 'orders':
                     loadOrdersData();
+                    break;
+                case 'pending-products':
+                    loadPendingProducts();
                     break;
             }
         }
@@ -556,8 +583,153 @@
             window.location.href = '/login.html';
         }
 
+        // Load pending products / Gözləyən məhsulları yüklə
+        function loadPendingProducts() {
+            // Mock pending products data / Mock gözləyən məhsul məlumatları
+            const pendingProducts = [
+                {
+                    id: 'pending-1',
+                    name: 'iPhone 16 Pro Max',
+                    brand: 'Apple',
+                    seller: 'TechStore Seller',
+                    price: 1199,
+                    category: 'Electronics',
+                    description: 'Latest iPhone with advanced camera system',
+                    image: 'https://via.placeholder.com/300x300',
+                    submittedAt: '2025-01-09T10:30:00Z',
+                    status: 'pending'
+                },
+                {
+                    id: 'pending-2',
+                    name: 'Gaming Laptop',
+                    brand: 'GamingTech',
+                    seller: 'Gaming Store',
+                    price: 1599,
+                    category: 'Electronics',
+                    description: 'High-performance gaming laptop with RTX 4080',
+                    image: 'https://via.placeholder.com/300x300',
+                    submittedAt: '2025-01-09T09:15:00Z',
+                    status: 'pending'
+                },
+                {
+                    id: 'pending-3',
+                    name: 'Wireless Headphones',
+                    brand: 'AudioPro',
+                    seller: 'Audio Store',
+                    price: 299,
+                    category: 'Electronics',
+                    description: 'Premium wireless headphones with noise cancellation',
+                    image: 'https://via.placeholder.com/300x300',
+                    submittedAt: '2025-01-08T16:45:00Z',
+                    status: 'pending'
+                }
+            ];
+            
+            const pendingProductsHtml = pendingProducts.map(product => `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center space-x-4">
+                            <img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-lg">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${product.name}</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">by ${product.brand} • Seller: ${product.seller}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-500">Submitted: ${new Date(product.submittedAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">$${product.price}</p>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Pending Review
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-700 dark:text-gray-300">${product.description}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Category: ${product.category}</p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <button onclick="approveProduct('${product.id}')" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
+                                ✅ Approve
+                            </button>
+                            <button onclick="rejectProduct('${product.id}')" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center">
+                                ❌ Reject
+                            </button>
+                            <button onclick="requestChanges('${product.id}')" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 flex items-center">
+                                📝 Request Changes
+                            </button>
+                        </div>
+                        <button onclick="viewProductDetails('${product.id}')" class="text-blue-600 hover:text-blue-500">
+                            👁️ View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('pendingProductsList').innerHTML = pendingProductsHtml;
+            
+            // Update pending count / Gözləyən sayını yenilə
+            document.getElementById('pendingCount').textContent = pendingProducts.length;
+        }
+
+        // Approve product / Məhsulu təsdiq et
+        function approveProduct(productId) {
+            if (confirm('Are you sure you want to approve this product?')) {
+                // Here you would typically send approval to server
+                console.log('Approving product:', productId);
+                alert('Product approved successfully!');
+                loadPendingProducts(); // Refresh the list
+            }
+        }
+
+        // Reject product / Məhsulu rədd et
+        function rejectProduct(productId) {
+            const reason = prompt('Please provide a reason for rejection:');
+            if (reason) {
+                // Here you would typically send rejection to server
+                console.log('Rejecting product:', productId, 'Reason:', reason);
+                alert('Product rejected successfully!');
+                loadPendingProducts(); // Refresh the list
+            }
+        }
+
+        // Request changes / Dəyişiklik tələb et
+        function requestChanges(productId) {
+            const changes = prompt('What changes are required?');
+            if (changes) {
+                // Here you would typically send change request to server
+                console.log('Requesting changes for product:', productId, 'Changes:', changes);
+                alert('Change request sent to seller!');
+                loadPendingProducts(); // Refresh the list
+            }
+        }
+
+        // View product details / Məhsul təfərrüatlarını gör
+        function viewProductDetails(productId) {
+            alert('Product details modal will be implemented here.');
+        }
+
+        // Refresh pending products / Gözləyən məhsulları yenilə
+        function refreshPendingProducts() {
+            loadPendingProducts();
+            alert('Pending products refreshed!');
+        }
+
+        // Approve all products / Bütün məhsulları təsdiq et
+        function approveAllProducts() {
+            if (confirm('Are you sure you want to approve ALL pending products?')) {
+                // Here you would typically send bulk approval to server
+                console.log('Approving all products');
+                alert('All products approved successfully!');
+                loadPendingProducts(); // Refresh the list
+            }
+        }
+
         // Load initial data / İlkin məlumatları yüklə
         loadDashboardData();
+        loadPendingProducts(); // Load pending products on page load
     </script>
 </body>
 </html>
