@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register - E-commerce Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full space-y-8 p-8">
+        <!-- Header / Başlıq -->
+        <div class="text-center">
+            <div class="flex items-center justify-center mb-6">
+                <svg class="h-12 w-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <span class="ml-3 text-2xl font-bold text-gray-900 dark:text-white">
+                    E-commerce Platform
+                </span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Welcome Back
+            </h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Sign in to your account or create a new one
+            </p>
+        </div>
+
+        <!-- Login Form / Giriş formu -->
+        <div id="loginForm" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <form class="space-y-6" onsubmit="handleLogin(event)">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email Address
+                    </label>
+                    <input
+                        id="loginEmail"
+                        type="email"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="Enter your email"
+                    />
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password
+                    </label>
+                    <input
+                        id="loginPassword"
+                        type="password"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="Enter your password"
+                    />
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input
+                            id="rememberMe"
+                            type="checkbox"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label for="rememberMe" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="#" class="text-sm text-blue-600 hover:text-blue-500">
+                        Forgot password?
+                    </a>
+                </div>
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Don't have an account?
+                    <button onclick="showRegisterForm()" class="text-blue-600 hover:text-blue-500 font-medium">
+                        Sign up here
+                    </button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Register Form / Qeydiyyat formu -->
+        <div id="registerForm" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hidden">
+            <form class="space-y-6" onsubmit="handleRegister(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="registerFirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            First Name
+                        </label>
+                        <input
+                            id="registerFirstName"
+                            type="text"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                            placeholder="First name"
+                        />
+                    </div>
+                    <div>
+                        <label for="registerLastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Last Name
+                        </label>
+                        <input
+                            id="registerLastName"
+                            type="text"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                            placeholder="Last name"
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label for="registerEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email Address
+                    </label>
+                    <input
+                        id="registerEmail"
+                        type="email"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="Enter your email"
+                    />
+                </div>
+                <div>
+                    <label for="registerPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password
+                    </label>
+                    <input
+                        id="registerPassword"
+                        type="password"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="Create a password"
+                    />
+                </div>
+                <div>
+                    <label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Confirm Password
+                    </label>
+                    <input
+                        id="registerConfirmPassword"
+                        type="password"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="Confirm your password"
+                    />
+                </div>
+                <div class="flex items-center">
+                    <input
+                        id="agreeTerms"
+                        type="checkbox"
+                        required
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label for="agreeTerms" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-500">Terms and Conditions</a>
+                    </label>
+                </div>
+                <button
+                    type="submit"
+                    class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+                >
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Already have an account?
+                    <button onclick="showLoginForm()" class="text-blue-600 hover:text-blue-500 font-medium">
+                        Sign in here
+                    </button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Admin Login / Admin girişi -->
+        <div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg border border-yellow-200 dark:border-yellow-700">
+            <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                Admin Access
+            </h3>
+            <p class="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                Admin panel access for site management
+            </p>
+            <button
+                onclick="showAdminLogin()"
+                class="w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors duration-200"
+            >
+                Admin Login
+            </button>
+        </div>
+
+        <!-- Back to Home / Ana səhifəyə qayıt -->
+        <div class="text-center">
+            <a href="/" class="text-blue-600 hover:text-blue-500 font-medium">
+                ← Back to Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Dark mode toggle / Qaranlıq rejim dəyişdiricisi -->
+    <button id="darkModeToggle" class="fixed bottom-4 right-4 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
+    <script>
+        // Dark mode toggle / Qaranlıq rejim dəyişdiricisi
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to 'light'
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            html.classList.add('dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Form switching / Form dəyişdiricisi
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showAdminLogin() {
+            const email = prompt('Admin Email:');
+            const password = prompt('Admin Password:');
+            
+            if (email === 'admin@example.com' && password === 'admin123') {
+                localStorage.setItem('user', JSON.stringify({
+                    id: 'admin-1',
+                    name: 'Admin User',
+                    email: 'admin@example.com',
+                    role: 'admin',
+                    loginTime: new Date().toISOString()
+                }));
+                window.location.href = '/admin.html';
+            } else {
+                alert('Invalid admin credentials');
+            }
+        }
+
+        // Handle login / Girişi idarə et
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Simulate login / Girişi simulyasiya et
+            if (email && password) {
+                const user = {
+                    id: 'user-' + Date.now(),
+                    name: email.split('@')[0],
+                    email: email,
+                    role: 'user',
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('user', JSON.stringify(user));
+                alert('Login successful!');
+                window.location.href = '/';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Handle register / Qeydiyyatı idarə et
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('registerFirstName').value;
+            const lastName = document.getElementById('registerLastName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (firstName && lastName && email && password) {
+                const user = {
+                    id: 'user-' + Date.now(),
+                    name: firstName + ' ' + lastName,
+                    email: email,
+                    role: 'user',
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('user', JSON.stringify(user));
+                alert('Registration successful!');
+                window.location.href = '/';
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Check if user is already logged in / İstifadəçi artıq giriş edib-mi yoxla
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (user) {
+            if (user.role === 'admin') {
+                window.location.href = '/admin.html';
+            } else {
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

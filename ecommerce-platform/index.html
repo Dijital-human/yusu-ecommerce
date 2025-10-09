@@ -54,8 +54,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
-                    <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    <button id="loginButton" onclick="handleLoginClick()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                         Login
+                    </button>
+                    <span id="userInfo" class="text-gray-700 dark:text-gray-300 hidden"></span>
+                    <button id="logoutButton" onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 hidden">
+                        Logout
                     </button>
                 </div>
             </div>
@@ -460,6 +464,36 @@
                 }
             });
         });
+
+        // Check if user is logged in / İstifadəçi giriş edib-mi yoxla
+        function checkUserStatus() {
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (user) {
+                document.getElementById('loginButton').classList.add('hidden');
+                document.getElementById('userInfo').classList.remove('hidden');
+                document.getElementById('logoutButton').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = `Welcome, ${user.name}`;
+            } else {
+                document.getElementById('loginButton').classList.remove('hidden');
+                document.getElementById('userInfo').classList.add('hidden');
+                document.getElementById('logoutButton').classList.add('hidden');
+            }
+        }
+
+        // Handle login click / Giriş klikini idarə et
+        function handleLoginClick() {
+            window.location.href = '/login.html';
+        }
+
+        // Logout function / Çıxış funksiyası
+        function logout() {
+            localStorage.removeItem('user');
+            checkUserStatus();
+            alert('Logged out successfully!');
+        }
+
+        // Initialize user status / İstifadəçi statusunu başlat
+        checkUserStatus();
     </script>
 </body>
 </html>
