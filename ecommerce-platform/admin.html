@@ -43,6 +43,9 @@
                     </span>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <a href="/" target="_blank" class="text-blue-600 hover:text-blue-500 font-medium">
+                        🏠 View Site
+                    </a>
                     <span id="adminName" class="text-gray-700 dark:text-gray-300">Admin User</span>
                     <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
                         Logout
@@ -152,11 +155,53 @@
                     </div>
                 </div>
 
-                <!-- Recent orders / Son sifarişlər -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Orders</h2>
-                    <div id="recentOrders" class="space-y-4">
-                        <!-- Orders will be loaded here / Sifarişlər burada yüklənəcək -->
+                <!-- Recent activity / Son fəaliyyət -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent orders / Son sifarişlər -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Orders</h2>
+                        <div id="recentOrders" class="space-y-4">
+                            <!-- Orders will be loaded here / Sifarişlər burada yüklənəcək -->
+                        </div>
+                    </div>
+                    
+                    <!-- Recent products / Son məhsullar -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Products</h2>
+                        <div id="recentProducts" class="space-y-4">
+                            <!-- Products will be loaded here / Məhsullar burada yüklənəcək -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick actions / Sürətli əməliyyatlar -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mt-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="showSection('add-product')" class="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            <div class="text-center">
+                                <div class="text-2xl mb-2">➕</div>
+                                <div class="text-sm font-medium">Add Product</div>
+                            </div>
+                        </button>
+                        <button onclick="showSection('pending-products')" class="bg-yellow-600 text-white p-4 rounded-lg hover:bg-yellow-700 transition-colors">
+                            <div class="text-center">
+                                <div class="text-2xl mb-2">⏳</div>
+                                <div class="text-sm font-medium">Review Products</div>
+                            </div>
+                        </button>
+                        <button onclick="showSection('pending-sellers')" class="bg-orange-600 text-white p-4 rounded-lg hover:bg-orange-700 transition-colors">
+                            <div class="text-center">
+                                <div class="text-2xl mb-2">👥</div>
+                                <div class="text-sm font-medium">Review Sellers</div>
+                            </div>
+                        </button>
+                        <button onclick="showSection('analytics')" class="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            <div class="text-center">
+                                <div class="text-2xl mb-2">📊</div>
+                                <div class="text-sm font-medium">View Analytics</div>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -327,6 +372,144 @@
                 <!-- Pending sellers list / Gözləyən satıcılar siyahısı -->
                 <div class="space-y-6" id="pendingSellersList">
                     <!-- Pending sellers will be loaded here / Gözləyən satıcılar burada yüklənəcək -->
+                </div>
+            </div>
+
+            <!-- Add Product Section / Məhsul əlavə et bölməsi -->
+            <div id="add-product" class="p-6 hidden">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Add New Product</h1>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <form onsubmit="handleAdminAddProduct(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="adminProductName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Product Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="adminProductName"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter product name"
+                                />
+                            </div>
+                            <div>
+                                <label for="adminProductBrand" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Brand *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="adminProductBrand"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="Enter brand name"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="adminProductDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Description *
+                            </label>
+                            <textarea
+                                id="adminProductDescription"
+                                required
+                                rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="Enter product description"
+                            ></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="adminProductPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Price *
+                                </label>
+                                <input
+                                    type="number"
+                                    id="adminProductPrice"
+                                    required
+                                    step="0.01"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            <div>
+                                <label for="adminProductStock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Stock Quantity *
+                                </label>
+                                <input
+                                    type="number"
+                                    id="adminProductStock"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div>
+                                <label for="adminProductCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Category *
+                                </label>
+                                <select
+                                    id="adminProductCategory"
+                                    required
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option value="">Select category</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Wearables">Wearables</option>
+                                    <option value="Photography">Photography</option>
+                                    <option value="Furniture">Furniture</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="adminProductImage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Product Image URL
+                            </label>
+                            <input
+                                type="url"
+                                id="adminProductImage"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="https://example.com/image.jpg"
+                            />
+                        </div>
+                        
+                        <div class="flex items-center space-x-6">
+                            <div class="flex items-center">
+                                <input
+                                    id="adminProductFeatured"
+                                    type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <label for="adminProductFeatured" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                    Mark as featured product
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input
+                                    id="adminProductActive"
+                                    type="checkbox"
+                                    checked
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <label for="adminProductActive" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                    Product is active
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="clearAdminForm()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                Clear
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Add Product
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -920,8 +1103,77 @@
             }
         }
 
+        // Handle admin add product / Admin məhsul əlavə et
+        function handleAdminAddProduct(event) {
+            event.preventDefault();
+            
+            const productData = {
+                id: 'admin-product-' + Date.now(),
+                name: document.getElementById('adminProductName').value,
+                brand: document.getElementById('adminProductBrand').value,
+                description: document.getElementById('adminProductDescription').value,
+                price: parseFloat(document.getElementById('adminProductPrice').value),
+                stock: parseInt(document.getElementById('adminProductStock').value),
+                category: document.getElementById('adminProductCategory').value,
+                image: document.getElementById('adminProductImage').value,
+                featured: document.getElementById('adminProductFeatured').checked,
+                active: document.getElementById('adminProductActive').checked,
+                status: 'approved', // Admin əlavə etdiyi məhsul avtomatik təsdiq edilir
+                addedBy: 'admin',
+                addedAt: new Date().toISOString()
+            };
+            
+            // Here you would typically send data to server
+            console.log('Admin adding product:', productData);
+            alert('Product added successfully by admin!');
+            clearAdminForm();
+        }
+
+        // Clear admin form / Admin formunu təmizlə
+        function clearAdminForm() {
+            document.getElementById('adminProductName').value = '';
+            document.getElementById('adminProductBrand').value = '';
+            document.getElementById('adminProductDescription').value = '';
+            document.getElementById('adminProductPrice').value = '';
+            document.getElementById('adminProductStock').value = '';
+            document.getElementById('adminProductCategory').value = '';
+            document.getElementById('adminProductImage').value = '';
+            document.getElementById('adminProductFeatured').checked = false;
+            document.getElementById('adminProductActive').checked = true;
+        }
+
+        // Load recent products / Son məhsulları yüklə
+        function loadRecentProducts() {
+            // Mock recent products data / Mock son məhsul məlumatları
+            const recentProducts = [
+                { name: 'iPhone 15 Pro', brand: 'Apple', price: 999, addedAt: '2025-01-09T10:30:00Z', status: 'approved' },
+                { name: 'MacBook Air', brand: 'Apple', price: 1299, addedAt: '2025-01-09T09:15:00Z', status: 'approved' },
+                { name: 'AirPods Pro', brand: 'Apple', price: 249, addedAt: '2025-01-08T16:45:00Z', status: 'pending' }
+            ];
+            
+            const recentProductsHtml = recentProducts.map(product => `
+                <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">${product.name}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">${product.brand} • $${product.price}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            product.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${product.status}
+                        </span>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${new Date(product.addedAt).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentProducts').innerHTML = recentProductsHtml;
+        }
+
         // Load initial data / İlkin məlumatları yüklə
         loadDashboardData();
+        loadRecentProducts(); // Load recent products
         loadPendingProducts(); // Load pending products on page load
         loadPendingSellers(); // Load pending sellers on page load
     </script>
