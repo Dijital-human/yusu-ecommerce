@@ -46,7 +46,7 @@
                     <a href="#home" class="text-gray-700 dark:text-gray-300 hover:text-blue-600">Home</a>
                     <a href="#products" class="text-gray-700 dark:text-gray-300 hover:text-blue-600">Products</a>
                     <a href="#cart" class="text-gray-700 dark:text-gray-300 hover:text-blue-600">Cart</a>
-                    <a href="#admin" class="text-gray-700 dark:text-gray-300 hover:text-blue-600">Admin</a>
+                    <a id="adminLink" href="/admin.html" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 hidden">Admin</a>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
@@ -473,10 +473,18 @@
                 document.getElementById('userInfo').classList.remove('hidden');
                 document.getElementById('logoutButton').classList.remove('hidden');
                 document.getElementById('userInfo').textContent = `Welcome, ${user.name}`;
+                
+                // Show admin link only for admin users / Admin linkini yalnız admin istifadəçilər üçün göstər
+                if (user.role === 'admin') {
+                    document.getElementById('adminLink').classList.remove('hidden');
+                } else {
+                    document.getElementById('adminLink').classList.add('hidden');
+                }
             } else {
                 document.getElementById('loginButton').classList.remove('hidden');
                 document.getElementById('userInfo').classList.add('hidden');
                 document.getElementById('logoutButton').classList.add('hidden');
+                document.getElementById('adminLink').classList.add('hidden');
             }
         }
 

@@ -156,10 +156,44 @@
             <!-- Products Section / Məhsullar bölməsi -->
             <div id="products" class="p-6 hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Products</h1>
-                    <button onclick="addProduct()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                        Add Product
-                    </button>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Products Management</h1>
+                    <div class="flex space-x-2">
+                        <button onclick="showAddProductModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            ➕ Add Product
+                        </button>
+                        <button onclick="refreshProducts()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Search and filters / Axtarış və filterlər -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <input
+                                type="text"
+                                id="productSearch"
+                                placeholder="Search products..."
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                onkeyup="filterProducts()"
+                            />
+                        </div>
+                        <div class="flex space-x-2">
+                            <select id="categoryFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" onchange="filterProducts()">
+                                <option value="">All Categories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Wearables">Wearables</option>
+                                <option value="Photography">Photography</option>
+                                <option value="Furniture">Furniture</option>
+                            </select>
+                            <select id="statusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" onchange="filterProducts()">
+                                <option value="">All Status</option>
+                                <option value="featured">Featured</option>
+                                <option value="regular">Regular</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -184,7 +218,48 @@
 
             <!-- Orders Section / Sifarişlər bölməsi -->
             <div id="orders" class="p-6 hidden">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Orders</h1>
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Orders Management</h1>
+                    <div class="flex space-x-2">
+                        <button onclick="refreshOrders()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            🔄 Refresh
+                        </button>
+                        <button onclick="exportOrders()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
+                            📊 Export
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Order filters / Sifariş filterləri -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <input
+                                type="text"
+                                id="orderSearch"
+                                placeholder="Search orders..."
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                onkeyup="filterOrders()"
+                            />
+                        </div>
+                        <div class="flex space-x-2">
+                            <select id="orderStatusFilter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" onchange="filterOrders()">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <input
+                                type="date"
+                                id="orderDateFilter"
+                                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                onchange="filterOrders()"
+                            />
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <div class="overflow-x-auto">
@@ -434,8 +509,45 @@
         }
 
         // Add product function / Məhsul əlavə et funksiyası
-        function addProduct() {
-            alert('Add product functionality will be implemented here.');
+        function showAddProductModal() {
+            alert('Add product modal will be implemented here.');
+        }
+
+        // Refresh products / Məhsulları yenilə
+        function refreshProducts() {
+            loadProductsData();
+            alert('Products refreshed!');
+        }
+
+        // Filter products / Məhsulları filter et
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            // Filter logic will be implemented here
+            console.log('Filtering products:', { searchTerm, categoryFilter, statusFilter });
+        }
+
+        // Refresh orders / Sifarişləri yenilə
+        function refreshOrders() {
+            loadOrdersData();
+            alert('Orders refreshed!');
+        }
+
+        // Export orders / Sifarişləri export et
+        function exportOrders() {
+            alert('Export orders functionality will be implemented here.');
+        }
+
+        // Filter orders / Sifarişləri filter et
+        function filterOrders() {
+            const searchTerm = document.getElementById('orderSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('orderStatusFilter').value;
+            const dateFilter = document.getElementById('orderDateFilter').value;
+            
+            // Filter logic will be implemented here
+            console.log('Filtering orders:', { searchTerm, statusFilter, dateFilter });
         }
 
         // Logout function / Çıxış funksiyası
