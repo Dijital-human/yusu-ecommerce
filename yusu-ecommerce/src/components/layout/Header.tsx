@@ -112,19 +112,30 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Search Bar / Axtarış Səhifəsi */}
-          <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search products... / Məhsul axtar..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          </div>
+                 {/* Search Bar / Axtarış Səhifəsi */}
+                 <div className="hidden md:flex flex-1 max-w-lg mx-8">
+                   <form 
+                     className="relative w-full"
+                     onSubmit={(e) => {
+                       e.preventDefault();
+                       const formData = new FormData(e.currentTarget);
+                       const query = formData.get('search') as string;
+                       if (query.trim()) {
+                         window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+                       }
+                     }}
+                   >
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                       <Search className="h-5 w-5 text-gray-400" />
+                     </div>
+                     <input
+                       type="text"
+                       name="search"
+                       placeholder="Search products... / Məhsul axtar..."
+                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                     />
+                   </form>
+                 </div>
 
           {/* Right Side Actions / Sağ Tərəf Əməliyyatları */}
           <div className="flex items-center space-x-4">
@@ -200,38 +211,8 @@ export function Header() {
                     </Link>
                   )}
                   
-                  {canAccess("/admin") && (
-                    <Link 
-                      href="/admin" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={handleLinkClick}
-                    >
-                      <Settings className="inline h-4 w-4 mr-2" />
-                      Admin Panel / Admin Paneli
-                    </Link>
-                  )}
-                  
-                  {canAccess("/seller") && (
-                    <Link 
-                      href="/seller" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={handleLinkClick}
-                    >
-                      <Package className="inline h-4 w-4 mr-2" />
-                      Seller Panel / Satıcı Paneli
-                    </Link>
-                  )}
-                  
-                  {canAccess("/courier") && (
-                    <Link 
-                      href="/courier" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={handleLinkClick}
-                    >
-                      <Truck className="inline h-4 w-4 mr-2" />
-                      Courier Panel / Kuryer Paneli
-                    </Link>
-                  )}
+                  {/* Admin, Seller, Courier panelləri artıq ayrı subdomain-lərdədir */}
+                  {/* Admin, Seller, Courier panels are now on separate subdomains */}
                   
                   <button
                     onClick={handleSignOutClick}
@@ -299,19 +280,31 @@ export function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 rounded-lg mt-2">
-              {/* Mobile Search / Mobil Axtarış */}
-              <div className="px-3 py-2">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search products... / Məhsul axtar..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
+                     {/* Mobile Search / Mobil Axtarış */}
+                     <div className="px-3 py-2">
+                       <form 
+                         onSubmit={(e) => {
+                           e.preventDefault();
+                           const formData = new FormData(e.currentTarget);
+                           const query = formData.get('search') as string;
+                           if (query.trim()) {
+                             window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+                           }
+                         }}
+                       >
+                         <div className="relative">
+                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                             <Search className="h-5 w-5 text-gray-400" />
+                           </div>
+                           <input
+                             type="text"
+                             name="search"
+                             placeholder="Search products... / Məhsul axtar..."
+                             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           />
+                         </div>
+                       </form>
+                     </div>
 
               {/* Mobile Navigation Links / Mobil Naviqasiya Linkləri */}
               <Link

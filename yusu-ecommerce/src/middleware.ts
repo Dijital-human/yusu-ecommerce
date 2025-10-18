@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { SimpleAdminAuth } from '@/lib/auth/simple-admin';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,6 +16,7 @@ export function middleware(request: NextRequest) {
     "/",
     "/products",
     "/categories",
+    "/search",
     "/about",
     "/contact",
     "/auth/signin",
@@ -28,8 +30,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For now, allow all other routes / İndi digər bütün route-lara icazə ver
-  // TODO: Add proper authentication check / Düzgün autentifikasiya yoxlaması əlavə et
+  // Customer routes protection / Müştəri route-larının qorunması
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/orders') || pathname.startsWith('/profile')) {
+    // TODO: Customer authentication implementation
+    // TODO: Müştəri autentifikasiya tətbiqi
+    // For now, allow access - temporary solution
+    // Hazırda girişə icazə ver - müvəqqəti həll
+    return NextResponse.next();
+  }
+
+  // For other routes, allow access / Digər route-lar üçün girişə icazə ver
   return NextResponse.next();
 }
 

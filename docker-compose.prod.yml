@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-https.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/ssl
+    depends_on:
+      - yusu-main
+      - yusu-admin
+      - yusu-seller
+      - yusu-courier
+
+  yusu-main:
+    build: ./yusu-ecommerce
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  yusu-admin:
+    build: ./yusu-admin
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  yusu-seller:
+    build: ./yusu-seller
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  yusu-courier:
+    build: ./yusu-courier
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  database:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: yusu
+      POSTGRES_USER: yusu
+      POSTGRES_PASSWORD: your_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

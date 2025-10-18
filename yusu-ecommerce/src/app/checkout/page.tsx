@@ -1,187 +1,293 @@
 /**
  * Checkout Page / Ödəniş Səhifəsi
- * This page handles the checkout process with payment integration
- * Bu səhifə ödəniş inteqrasiyası ilə checkout prosesini idarə edir
+ * This component handles the checkout process
+ * Bu komponent ödəniş prosesini idarə edir
  */
 
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/store/CartContext";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "@/hooks/useLocation";
+import { useSession } from "next-auth/react";
 import { Layout } from "@/components/layout/Layout";
-import { LocationPicker } from "@/components/location/LocationPicker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { Alert, AlertDescription } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useCart } from "@/store/CartContext";
 import { 
   CreditCard, 
+  Truck, 
   MapPin, 
   User, 
-  Phone,
+  Phone, 
   Mail,
   Lock,
   CheckCircle,
   AlertCircle,
-  Loader2
+  ArrowLeft
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
-interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
+interface Address {
+  id: string;
+  street: string;
   city: string;
   state: string;
   zipCode: string;
   country: string;
+  isDefault: boolean;
+}
+
+interface PaymentMethod {
+  id: string;
+  type: "card" | "paypal" | "apple_pay" | "google_pay";
+  last4?: string;
+  brand?: string;
+  isDefault: boolean;
 }
 
 export default function CheckoutPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const { state: cartState, clearCart } = useCart();
-  const { isAuthenticated, user } = useAuth();
-  const { getCurrentLocation, isWithinDeliveryArea } = useLocation();
-  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState(1);
-  const [selectedLocation, setSelectedLocation] = useState<any>(null);
-
-  // Form states / Form vəziyyətləri
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
-    firstName: user?.name?.split(' ')[0] || '',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || '',
-    email: user?.email || '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'Azerbaijan',
+  const [step, setStep] = useState<"shipping" | "payment" | "review" | "success">("shipping");
+  
+  // Form states
+  const [shippingAddress, setShippingAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "Azerbaijan",
   });
+  
+  const [billingAddress, setBillingAddress] = useState({
+    sameAsShipping: true,
+    street: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "Azerbaijan",
+  });
+  
+  const [paymentMethod, setPaymentMethod] = useState({
+    type: "card" as "card" | "paypal" | "apple_pay" | "google_pay",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    nameOnCard: "",
+  });
+  
+  const [orderNotes, setOrderNotes] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  // Addresses and payment methods
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
-  // Redirect if not authenticated / Autentifikasiya olunmayıbsa yönləndir
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/auth/signin?callbackUrl=/checkout');
+    if (status === "loading") return;
+    
+    if (!session) {
+      router.push("/auth/signin?callbackUrl=/checkout");
+      return;
     }
-  }, [isAuthenticated, router]);
-
-  // Redirect if cart is empty / Səbət boşdursa yönləndir
-  useEffect(() => {
-    if (isAuthenticated && cartState.items.length === 0) {
-      router.push('/products');
+    
+    if (cartState.items.length === 0) {
+      router.push("/cart");
+      return;
     }
-  }, [isAuthenticated, cartState.items.length, router]);
+    
+    fetchAddresses();
+    fetchPaymentMethods();
+  }, [session, status, cartState.items.length, router]);
 
-  const handleInputChange = (field: keyof ShippingAddress, value: string) => {
-    setShippingAddress(prev => ({
+  const fetchAddresses = async () => {
+    try {
+      const response = await fetch("/api/addresses");
+      if (response.ok) {
+        const data = await response.json();
+        setAddresses(data);
+        const defaultAddress = data.find((addr: Address) => addr.isDefault);
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress.id);
+          setShippingAddress({
+            street: defaultAddress.street,
+            city: defaultAddress.city,
+            state: defaultAddress.state,
+            zipCode: defaultAddress.zipCode,
+            country: defaultAddress.country,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await fetch("/api/payment-methods");
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentMethods(data);
+        const defaultMethod = data.find((method: PaymentMethod) => method.isDefault);
+        if (defaultMethod) {
+          setSelectedPaymentMethod(defaultMethod.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+    }
+  };
+
+  const handleAddressChange = (addressId: string) => {
+    setSelectedAddress(addressId);
+    const address = addresses.find(addr => addr.id === addressId);
+    if (address) {
+      setShippingAddress({
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+        country: address.country,
+      });
+    }
+  };
+
+  const handleBillingAddressChange = (field: string, value: any) => {
+    setBillingAddress(prev => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const validateForm = (): boolean => {
-    const requiredFields: (keyof ShippingAddress)[] = [
-      'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'zipCode'
-    ];
+  const handlePaymentMethodChange = (field: string, value: any) => {
+    setPaymentMethod(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-    for (const field of requiredFields) {
-      if (!shippingAddress[field].trim()) {
-        setError(`Please fill in ${field} / ${field} sahəsini doldurun`);
-        return false;
-      }
+  const validateShipping = () => {
+    const required = ["street", "city", "state", "zipCode"];
+    return required.every(field => shippingAddress[field as keyof typeof shippingAddress].trim() !== "");
+  };
+
+  const validatePayment = () => {
+    if (paymentMethod.type === "card") {
+      return paymentMethod.cardNumber.trim() !== "" && 
+             paymentMethod.expiryDate.trim() !== "" && 
+             paymentMethod.cvv.trim() !== "" && 
+             paymentMethod.nameOnCard.trim() !== "";
     }
-
-    // Email validation / Email yoxlaması
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(shippingAddress.email)) {
-      setError('Please enter a valid email address / Etibarlı email ünvanı daxil edin');
-      return false;
-    }
-
     return true;
   };
 
-  const handleProceedToPayment = () => {
-    if (validateForm()) {
-      setStep(2);
-      setError(null);
+  const handleNextStep = () => {
+    if (step === "shipping" && validateShipping()) {
+      setStep("payment");
+    } else if (step === "payment" && validatePayment()) {
+      setStep("review");
     }
   };
 
-  const handlePayment = async () => {
+  const handlePlaceOrder = async () => {
+    if (!agreedToTerms) {
+      setError("Please agree to the terms and conditions / Zəhmət olmasa şərtlər və qaydalarla razılaşın");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
     try {
-      setIsProcessing(true);
-      setError(null);
+      const orderData = {
+        items: cartState.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+        shippingAddress: shippingAddress,
+        billingAddress: billingAddress.sameAsShipping ? shippingAddress : billingAddress,
+        paymentMethod: paymentMethod,
+        notes: orderNotes,
+        totalAmount: cartState.totalPrice,
+      };
 
-      // Create order / Sifariş yarat
-      const orderResponse = await fetch('/api/orders', {
-        method: 'POST',
+      const response = await fetch("/api/orders", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          items: cartState.items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          })),
-          shippingAddress,
-          paymentMethod: 'stripe',
-        }),
+        body: JSON.stringify(orderData),
       });
 
-      const orderData = await orderResponse.json();
-
-      if (!orderData.success) {
-        throw new Error(orderData.error || 'Failed to create order / Sifariş yaratmaq uğursuz');
+      if (response.ok) {
+        const order = await response.json();
+        clearCart();
+        setStep("success");
+        // Redirect to order confirmation page
+        setTimeout(() => {
+          router.push(`/orders/${order.id}`);
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to place order / Sifariş verilə bilmədi");
       }
-
-      // Create payment intent / Ödəniş niyyəti yarat
-      const paymentResponse = await fetch('/api/payment/create-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: orderData.data[0].id,
-          amount: cartState.totalPrice,
-          currency: 'usd',
-        }),
-      });
-
-      const paymentData = await paymentResponse.json();
-
-      if (!paymentData.success) {
-        throw new Error(paymentData.error || 'Failed to create payment / Ödəniş yaratmaq uğursuz');
-      }
-
-      // Redirect to payment success / Ödəniş uğuruna yönləndir
-      router.push(`/payment/success?orderId=${orderData.data[0].id}`);
-      
-      // Clear cart / Səbəti təmizlə
-      await clearCart();
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred / Xəta baş verdi');
+    } catch (error) {
+      console.error("Error placing order:", error);
+      setError("Failed to place order / Sifariş verilə bilmədi");
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
     }
   };
 
-  if (!isAuthenticated || cartState.items.length === 0) {
+  if (status === "loading") {
     return (
       <Layout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-gray-600">Loading... / Yüklənir...</p>
+        <div className="container mx-auto py-8 px-4">
+          <Skeleton className="h-8 w-64 mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!session) {
+    return null; // Will redirect
+  }
+
+  if (cartState.items.length === 0) {
+    return null; // Will redirect
+  }
+
+  if (step === "success") {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <div className="max-w-md mx-auto">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Order Placed Successfully! / Sifariş Uğurla Verildi!
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Thank you for your order. You will receive a confirmation email shortly.
+              / Sifarişiniz üçün təşəkkür edirik. Tezliklə təsdiq e-poçtu alacaqsınız.
+            </p>
+            <Button onClick={() => router.push("/orders")}>
+              View Orders / Sifarişləri Gör
+            </Button>
           </div>
         </div>
       </Layout>
@@ -190,286 +296,415 @@ export default function CheckoutPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header / Başlıq */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Checkout / Ödəniş
-            </h1>
-            <p className="text-gray-600">
-              Complete your order / Sifarişinizi tamamlayın
-            </p>
+      <div className="container mx-auto py-8 px-4">
+        {/* Header / Başlıq */}
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back / Geri
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900">Checkout / Ödəniş</h1>
+        </div>
+
+        {/* Progress Steps / Tərəqqi Addımları */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-8">
+            {[
+              { key: "shipping", label: "Shipping / Çatdırılma", icon: Truck },
+              { key: "payment", label: "Payment / Ödəniş", icon: CreditCard },
+              { key: "review", label: "Review / Nəzərdən Keçir", icon: CheckCircle },
+            ].map((stepItem, index) => {
+              const isActive = step === stepItem.key;
+              const isCompleted = ["shipping", "payment", "review"].indexOf(step) > index;
+              const Icon = stepItem.icon;
+              
+              return (
+                <div key={stepItem.key} className="flex items-center">
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                    isActive ? "bg-blue-600 text-white" : 
+                    isCompleted ? "bg-green-600 text-white" : 
+                    "bg-gray-200 text-gray-600"
+                  }`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className={`ml-2 text-sm font-medium ${
+                    isActive ? "text-blue-600" : 
+                    isCompleted ? "text-green-600" : 
+                    "text-gray-500"
+                  }`}>
+                    {stepItem.label}
+                  </span>
+                  {index < 2 && (
+                    <div className={`w-16 h-0.5 mx-4 ${
+                      isCompleted ? "bg-green-600" : "bg-gray-200"
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content / Əsas Məzmun */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Step 1: Shipping Information / Addım 1: Çatdırılma Məlumatı */}
-              {step === 1 && (
-                <Card className="animate-fade-in">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <MapPin className="h-5 w-5 text-blue-600" />
-                      <span>Shipping Information / Çatdırılma Məlumatı</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="firstName">First Name / Ad</Label>
-                        <Input
-                          id="firstName"
-                          value={shippingAddress.firstName}
-                          onChange={(e) => handleInputChange('firstName', e.target.value)}
-                          placeholder="Enter your first name / Adınızı daxil edin"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="lastName">Last Name / Soyad</Label>
-                        <Input
-                          id="lastName"
-                          value={shippingAddress.lastName}
-                          onChange={(e) => handleInputChange('lastName', e.target.value)}
-                          placeholder="Enter your last name / Soyadınızı daxil edin"
-                        />
-                      </div>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Main Form / Əsas Form */}
+          <div className="space-y-6">
+            {error && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2 text-red-800">
+                    <AlertCircle className="h-5 w-5" />
+                    <span className="text-sm">{error}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="email">Email / Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={shippingAddress.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="Enter your email / Emailinizi daxil edin"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone">Phone / Telefon</Label>
-                        <Input
-                          id="phone"
-                          value={shippingAddress.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          placeholder="Enter your phone / Telefonunuzu daxil edin"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Address / Ünvan</Label>
-                      <LocationPicker
-                        onLocationSelect={(location) => {
-                          setSelectedLocation(location);
-                          setShippingAddress(prev => ({
-                            ...prev,
-                            address: location.address,
-                            city: location.city,
-                            country: location.country,
-                          }));
-                        }}
-                        initialLocation={selectedLocation}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="city">City / Şəhər</Label>
-                        <Input
-                          id="city"
-                          value={shippingAddress.city}
-                          onChange={(e) => handleInputChange('city', e.target.value)}
-                          placeholder="Enter city / Şəhəri daxil edin"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="state">State / Rayon</Label>
-                        <Input
-                          id="state"
-                          value={shippingAddress.state}
-                          onChange={(e) => handleInputChange('state', e.target.value)}
-                          placeholder="Enter state / Rayonu daxil edin"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="zipCode">ZIP Code / Poçt Kodu</Label>
-                        <Input
-                          id="zipCode"
-                          value={shippingAddress.zipCode}
-                          onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                          placeholder="Enter ZIP / Poçt kodunu daxil edin"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="country">Country / Ölkə</Label>
-                      <Input
-                        id="country"
-                        value={shippingAddress.country}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        placeholder="Enter country / Ölkəni daxil edin"
-                      />
-                    </div>
-
-                    <Button
-                      onClick={handleProceedToPayment}
-                      className="w-full"
-                      size="lg"
-                    >
-                      Proceed to Payment / Ödənişə Keç
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 2: Payment / Addım 2: Ödəniş */}
-              {step === 2 && (
-                <Card className="animate-fade-in">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <CreditCard className="h-5 w-5 text-blue-600" />
-                      <span>Payment / Ödəniş</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="flex items-center space-x-2 text-blue-800">
-                        <Lock className="h-4 w-4" />
-                        <span className="font-medium">Secure Payment / Təhlükəsiz Ödəniş</span>
-                      </div>
-                      <p className="text-sm text-blue-600 mt-1">
-                        Your payment information is encrypted and secure / Ödəniş məlumatlarınız şifrələnir və təhlükəsizdir
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <CreditCard className="h-8 w-8 text-blue-600" />
-                          <div>
-                            <p className="font-medium">Credit/Debit Card / Kredit/Debet Kart</p>
-                            <p className="text-sm text-gray-500">Visa, Mastercard, American Express</p>
-                          </div>
-                        </div>
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => setStep(1)}
-                        className="flex-1"
-                      >
-                        Back / Geri
-                      </Button>
-                      <Button
-                        onClick={handlePayment}
-                        disabled={isProcessing}
-                        className="flex-1"
-                        size="lg"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Processing... / Emal edilir...
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="h-4 w-4 mr-2" />
-                            Pay {formatCurrency(cartState.totalPrice)} / {formatCurrency(cartState.totalPrice)} Ödə
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Order Summary / Sifariş Xülasəsi */}
-            <div className="space-y-6">
+            {/* Shipping Address / Çatdırılma Ünvanı */}
+            {step === "shipping" && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Order Summary / Sifariş Xülasəsi</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MapPin className="h-5 w-5" />
+                    <span>Shipping Address / Çatdırılma Ünvanı</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Items / Elementlər */}
-                  <div className="space-y-3">
-                    {cartState.items.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                          <span className="text-xs font-medium text-gray-600">
-                            {item.quantity}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {item.product.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {formatCurrency(item.product.price)} × {item.quantity}
-                          </p>
-                        </div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {formatCurrency(item.product.price * item.quantity)}
-                        </p>
-                      </div>
-                    ))}
+                  {/* Saved Addresses / Saxlanılmış Ünvanlar */}
+                  {addresses.length > 0 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select saved address / Saxlanılmış ünvanı seçin</label>
+                      <select
+                        value={selectedAddress}
+                        onChange={(e) => handleAddressChange(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value="">Use new address / Yeni ünvan istifadə et</option>
+                        {addresses.map((address) => (
+                          <option key={address.id} value={address.id}>
+                            {address.street}, {address.city}, {address.state} {address.zipCode}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Address Form / Ünvan Formu */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address / Küçə Ünvanı *
+                      </label>
+                      <Input
+                        value={shippingAddress.street}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, street: e.target.value }))}
+                        placeholder="Enter street address / Küçə ünvanını daxil edin"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        City / Şəhər *
+                      </label>
+                      <Input
+                        value={shippingAddress.city}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="Enter city / Şəhəri daxil edin"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        State / Rayon *
+                      </label>
+                      <Input
+                        value={shippingAddress.state}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, state: e.target.value }))}
+                        placeholder="Enter state / Rayonu daxil edin"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        ZIP Code / Poçt Kodu *
+                      </label>
+                      <Input
+                        value={shippingAddress.zipCode}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, zipCode: e.target.value }))}
+                        placeholder="Enter ZIP code / Poçt kodunu daxil edin"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country / Ölkə *
+                      </label>
+                      <select
+                        value={shippingAddress.country}
+                        onChange={(e) => setShippingAddress(prev => ({ ...prev, country: e.target.value }))}
+                        className="w-full p-2 border border-gray-300 rounded-lg"
+                        required
+                      >
+                        <option value="Azerbaijan">Azerbaijan / Azərbaycan</option>
+                        <option value="Turkey">Turkey / Türkiyə</option>
+                        <option value="USA">United States / Amerika Birləşmiş Ştatları</option>
+                        <option value="UK">United Kingdom / Böyük Britaniya</option>
+                      </select>
+                    </div>
                   </div>
 
-                  {/* Totals / Cəmlər */}
-                  <div className="border-t pt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal / Alt Cəm</span>
-                      <span className="font-medium">{formatCurrency(cartState.totalPrice)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Shipping / Çatdırılma</span>
-                      <span className="font-medium text-green-600">Free / Pulsuz</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tax / Vergi</span>
-                      <span className="font-medium">$0.00</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between text-lg font-semibold">
-                        <span>Total / Cəmi</span>
-                        <span className="text-blue-600">{formatCurrency(cartState.totalPrice)}</span>
-                      </div>
-                    </div>
-                  </div>
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={!validateShipping()}
+                    className="w-full"
+                  >
+                    Continue to Payment / Ödənişə Davam Et
+                  </Button>
                 </CardContent>
               </Card>
+            )}
 
-              {/* Security Info / Təhlükəsizlik Məlumatı */}
+            {/* Payment Method / Ödəniş Metodu */}
+            {step === "payment" && (
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-2 text-green-600">
-                    <Lock className="h-4 w-4" />
-                    <span className="text-sm font-medium">Secure Checkout / Təhlükəsiz Ödəniş</span>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CreditCard className="h-5 w-5" />
+                    <span>Payment Method / Ödəniş Metodu</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Payment Type Selection / Ödəniş Növü Seçimi */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Payment Type / Ödəniş Növü</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { value: "card", label: "Credit Card / Kredit Kartı", icon: CreditCard },
+                        { value: "paypal", label: "PayPal", icon: CreditCard },
+                      ].map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => handlePaymentMethodChange("type", option.value)}
+                            className={`p-4 border rounded-lg text-left ${
+                              paymentMethod.type === option.value
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-300 hover:border-gray-400"
+                            }`}
+                          >
+                            <Icon className="h-6 w-6 mb-2" />
+                            <div className="text-sm font-medium">{option.label}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Your payment information is protected by 256-bit SSL encryption / 
-                    Ödəniş məlumatlarınız 256-bit SSL şifrələmə ilə qorunur
-                  </p>
+
+                  {/* Card Details / Kart Təfərrüatları */}
+                  {paymentMethod.type === "card" && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Name on Card / Kartdakı Ad *
+                        </label>
+                        <Input
+                          value={paymentMethod.nameOnCard}
+                          onChange={(e) => handlePaymentMethodChange("nameOnCard", e.target.value)}
+                          placeholder="Enter name on card / Kartdakı adı daxil edin"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Card Number / Kart Nömrəsi *
+                        </label>
+                        <Input
+                          value={paymentMethod.cardNumber}
+                          onChange={(e) => handlePaymentMethodChange("cardNumber", e.target.value)}
+                          placeholder="1234 5678 9012 3456"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Expiry Date / Bitmə Tarixi *
+                          </label>
+                          <Input
+                            value={paymentMethod.expiryDate}
+                            onChange={(e) => handlePaymentMethodChange("expiryDate", e.target.value)}
+                            placeholder="MM/YY"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            CVV *
+                          </label>
+                          <Input
+                            value={paymentMethod.cvv}
+                            onChange={(e) => handlePaymentMethodChange("cvv", e.target.value)}
+                            placeholder="123"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={!validatePayment()}
+                    className="w-full"
+                  >
+                    Review Order / Sifarişi Nəzərdən Keçir
+                  </Button>
                 </CardContent>
               </Card>
-            </div>
+            )}
+
+            {/* Order Review / Sifariş Nəzərdən Keçirməsi */}
+            {step === "review" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CheckCircle className="h-5 w-5" />
+                    <span>Review Your Order / Sifarişinizi Nəzərdən Keçirin</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Shipping Address Review / Çatdırılma Ünvanı Nəzərdən Keçirməsi */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Shipping Address / Çatdırılma Ünvanı</h4>
+                    <div className="text-sm text-gray-600">
+                      <p>{shippingAddress.street}</p>
+                      <p>{shippingAddress.city}, {shippingAddress.state} {shippingAddress.zipCode}</p>
+                      <p>{shippingAddress.country}</p>
+                    </div>
+                  </div>
+
+                  {/* Payment Method Review / Ödəniş Metodu Nəzərdən Keçirməsi */}
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Payment Method / Ödəniş Metodu</h4>
+                    <div className="text-sm text-gray-600">
+                      <p className="capitalize">{paymentMethod.type.replace("_", " ")}</p>
+                      {paymentMethod.type === "card" && (
+                        <p>**** **** **** {paymentMethod.cardNumber.slice(-4)}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Order Notes / Sifariş Qeydləri */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Order Notes / Sifariş Qeydləri
+                    </label>
+                    <textarea
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      placeholder="Any special instructions? / Xüsusi təlimatlarınız varmı?"
+                      className="w-full p-2 border border-gray-300 rounded-lg"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Terms and Conditions / Şərtlər və Qaydalar */}
+                  <div className="flex items-start space-x-2">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <label htmlFor="terms" className="text-sm text-gray-600">
+                      I agree to the terms and conditions and privacy policy / 
+                      Şərtlər və qaydalar və məxfilik siyasəti ilə razıyam
+                    </label>
+                  </div>
+
+                  <Button
+                    onClick={handlePlaceOrder}
+                    disabled={!agreedToTerms || loading}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {loading ? "Placing Order..." : "Place Order / Sifariş Ver"}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Error Display / Xəta Göstəricisi */}
-          {error && (
-            <div className="mt-6">
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            </div>
-          )}
+          {/* Order Summary / Sifariş Xülasəsi */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary / Sifariş Xülasəsi</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Cart Items / Səbət Elementləri */}
+                <div className="space-y-3">
+                  {cartState.items.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3">
+                      <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0">
+                        <img
+                          src={item.product.images?.[0] || "/placeholder-product.jpg"}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {item.product.name}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Qty: {item.quantity} × {formatCurrency(item.product.price)}
+                        </p>
+                      </div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {formatCurrency(item.product.price * item.quantity)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Order Totals / Sifariş Cəmləri */}
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal / Alt Cəm</span>
+                    <span className="font-medium">{formatCurrency(cartState.totalPrice)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Shipping / Çatdırılma</span>
+                    <span className="font-medium text-green-600">Free / Pulsuz</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tax / Vergi</span>
+                    <span className="font-medium">$0.00</span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between text-lg font-semibold">
+                      <span>Total / Cəmi</span>
+                      <span>{formatCurrency(cartState.totalPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Security Badge / Təhlükəsizlik Nişanı */}
+                <div className="bg-green-50 p-3 rounded-md">
+                  <div className="flex items-center space-x-2 text-green-800">
+                    <Lock className="h-4 w-4" />
+                    <span className="text-sm font-medium">Secure checkout / Təhlükəsiz ödəniş</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

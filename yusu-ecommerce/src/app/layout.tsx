@@ -4,13 +4,13 @@ import { SessionProvider } from "@/components/providers/SessionProvider";
 import { CartProvider } from "@/store/CartContext";
 
 export const metadata: Metadata = {
-  title: "Yusu - Your Trusted E-commerce Platform",
-  description: "Discover amazing products with fast delivery and secure payment. Your trusted e-commerce platform for quality products and reliable service.",
-  keywords: "ecommerce, online shopping, products, delivery, secure payment",
-  authors: [{ name: "Yusu Team" }],
+  title: "Yusu - Müştəri Platforması / Customer Platform",
+  description: "Yusu - Müştərilər üçün etibarlı e-ticarət platforması. Keyfiyyətli məhsullar, sürətli çatdırılma və təhlükəsiz ödəniş. / Reliable e-commerce platform for customers with quality products, fast delivery and secure payment.",
+  keywords: "ecommerce, online shopping, müştəri, customer, products, məhsullar, delivery, çatdırılma, secure payment, təhlükəsiz ödəniş",
+  authors: [{ name: "Yusu Customer Team" }],
   openGraph: {
-    title: "Yusu - Your Trusted E-commerce Platform",
-    description: "Discover amazing products with fast delivery and secure payment.",
+    title: "Yusu - Müştəri Platforması / Customer Platform",
+    description: "Keyfiyyətli məhsullar, sürətli çatdırılma və təhlükəsiz ödəniş. / Quality products, fast delivery and secure payment.",
     type: "website",
     locale: "en_US",
   },

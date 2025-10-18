@@ -1,0 +1,40 @@
+name: Deploy to Production / Production-a Yüklə
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code / Kodu yüklə
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js / Node.js quraşdır
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies / Dependencies yüklə
+      run: npm install
+      
+    - name: Build project / Proyekti build et
+      run: npm run build
+      
+    - name: Deploy to server / Server-ə yüklə
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /path/to/your/project
+          git pull origin main
+          npm install
+          npm run build
+          sudo systemctl reload nginx

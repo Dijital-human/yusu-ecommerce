@@ -1,211 +1,206 @@
-# Yusu E-commerce Platform / Yusu E-ticarət Platforması
+# Yusu - Müştəri Platforması / Customer Platform
 
-A modern, full-featured e-commerce platform built with Next.js, TypeScript, and Prisma.
-Next.js, TypeScript və Prisma ilə qurulmuş müasir, tam funksiyalı e-ticarət platforması.
+## 📋 Təsvir / Description
 
-## Features / Xüsusiyyətlər
+Yusu - müştərilər üçün müasir e-ticarət platforması. Keyfiyyətli məhsullar, sürətli çatdırılma və təhlükəsiz ödəniş təmin edir.
 
-### 🛍️ **Customer Features / Müştəri Xüsusiyyətləri**
-- Browse products with advanced filtering / Təkmilləşdirilmiş filtrlə məhsullara bax
-- Shopping cart and wishlist / Alış səbəti və istək siyahısı
-- Secure checkout with multiple payment methods / Çoxlu ödəniş üsulları ilə təhlükəsiz ödəniş
-- Order tracking and history / Sifariş izləmə və tarixçə
-- Product reviews and ratings / Məhsul rəyləri və reytinqlər
+Yusu is a modern e-commerce platform for customers, providing quality products, fast delivery, and secure payment solutions.
 
-### 🏪 **Seller Features / Satıcı Xüsusiyyətləri**
-- Product management dashboard / Məhsul idarəetmə paneli
-- Inventory management / İnventar idarəetməsi
-- Order processing and fulfillment / Sifariş emalı və yerinə yetirmə
-- Sales analytics and reporting / Satış analitikası və hesabatlar
-- Multi-vendor support / Çox satıcı dəstəyi
+Bu platforma müştərilər üçün tam onlayn alış-veriş təcrübəsi təmin edir, məhsul axtarışından sifariş verilməsinə qədər bütün prosesləri əhatə edir.
 
-### 🚚 **Courier Features / Kuryer Xüsusiyyətləri**
-- Delivery assignment system / Çatdırılma təyin sistemi
-- Route optimization / Marşrut optimallaşdırması
-- Real-time status updates / Real-vaxt status yeniləmələri
-- Customer communication / Müştəri əlaqəsi
-- Performance tracking / Performans izləmə
+This platform provides a complete online shopping experience for customers, covering all processes from product search to order placement.
 
-### 👑 **Admin Features / Admin Xüsusiyyətləri**
-- Complete platform control / Platforma tam nəzarət
-- User management (all roles) / İstifadəçi idarəetməsi (bütün rollar)
-- Product and category management / Məhsul və kateqoriya idarəetməsi
-- Order and payment oversight / Sifariş və ödəniş nəzarəti
-- Analytics and reporting / Analitika və hesabatlar
-- System monitoring / Sistem monitorinqi
+## 🚀 Xüsusiyyətlər / Features
 
-## Tech Stack / Texnologiya Yığını
+### Müştəri Xüsusiyyətləri / Customer Features
+- ✅ Məhsul axtarışı və səhifələmə / Product browsing and search
+- ✅ Alış səbəti idarəetməsi / Shopping cart management
+- ✅ Təhlükəsiz ödəniş prosesi / Secure checkout process
+- ✅ Sifariş izləmə / Order tracking
+- ✅ Profil idarəetməsi / Profile management
+- ✅ Məhsul rəyləri və reytinqlər / Product reviews and ratings
+- ✅ Kateqoriya əsaslı axtarış / Category-based search
+- ✅ Favorit məhsullar / Favorite products
+- ✅ Sifariş tarixçəsi / Order history
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS, Radix UI
-- **Backend**: Next.js API Routes, tRPC
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js (OAuth + Credentials)
-- **Payments**: Stripe
-- **Deployment**: Vercel
-- **State Management**: React Context API
-- **Form Handling**: React Hook Form + Zod
+### Alış-veriş Təcrübəsi / Shopping Experience
+- ✅ Responsive dizayn / Responsive design
+- ✅ Sürətli yükləmə / Fast loading
+- ✅ İntuitiv interfeys / Intuitive interface
+- ✅ Mobil uyğunluq / Mobile compatibility
+- ✅ Çoxdilli dəstək / Multi-language support
 
-## Quick Start / Sürətli Başlanğıc
+## 🛠️ Texnologiyalar / Technologies
 
-### Prerequisites / Tələblər
+- **Frontend:** Next.js 15, React 19, TypeScript
+- **Styling:** Tailwind CSS, Radix UI
+- **Database:** Prisma ORM, SQLite
+- **Authentication:** NextAuth.js
+- **Payment:** Stripe
+- **State Management:** React Context
 
-- Node.js 18+ / Node.js 18+
-- npm or yarn / npm və ya yarn
-- PostgreSQL database / PostgreSQL veritabanı
-
-### Installation / Quraşdırma
-
-1. **Clone the repository / Repository-ni klonlayın:**
-```bash
-git clone https://github.com/yourusername/yusu-ecommerce.git
-cd yusu-ecommerce
-```
-
-2. **Install dependencies / Asılılıqları quraşdırın:**
-```bash
-npm install
-```
-
-3. **Set up environment variables / Mühit dəyişənlərini quraşdırın:**
-```bash
-cp env.example .env.local
-# Edit .env.local with your values / .env.local-i dəyərlərinizlə redaktə edin
-```
-
-4. **Set up the database / Veritabanını quraşdırın:**
-```bash
-npx prisma migrate dev
-npm run db:seed
-```
-
-5. **Start the development server / İnkişaf serverini başladın:**
-```bash
-npm run dev
-```
-
-6. **Open your browser / Brauzerinizi açın:**
-```
-http://localhost:3000
-```
-
-## Project Structure / Layihə Strukturu
+## 📁 Proyekt Strukturu / Project Structure
 
 ```
 yusu-ecommerce/
 ├── src/
-│   ├── app/                 # Next.js App Router
-│   │   ├── api/            # API Routes
-│   │   ├── admin/          # Admin pages
-│   │   ├── seller/         # Seller pages
-│   │   ├── courier/        # Courier pages
-│   │   └── auth/           # Authentication pages
-│   ├── components/         # React components
-│   │   ├── ui/             # UI components
-│   │   ├── layout/         # Layout components
-│   │   ├── forms/          # Form components
-│   │   └── pages/          # Page components
-│   ├── lib/                # Utility libraries
-│   │   ├── auth/           # Authentication config
-│   │   ├── db/             # Database connection
-│   │   └── validations/    # Zod schemas
-│   ├── hooks/              # Custom React hooks
-│   ├── store/              # State management
-│   └── types/              # TypeScript types
-├── prisma/                 # Database schema and migrations
-├── docs/                   # Documentation
-└── public/                 # Static assets
+│   ├── app/
+│   │   ├── products/         # Məhsul səhifələri / Product pages
+│   │   ├── categories/       # Kateqoriya səhifələri / Category pages
+│   │   ├── search/           # Axtarış səhifəsi / Search page
+│   │   ├── checkout/         # Ödəniş səhifəsi / Checkout page
+│   │   ├── orders/           # Sifariş səhifələri / Order pages
+│   │   ├── profile/          # Profil səhifəsi / Profile page
+│   │   ├── dashboard/        # Müştəri paneli / Customer dashboard
+│   │   ├── api/              # API route-ları / API routes
+│   │   └── auth/             # Giriş səhifələri / Auth pages
+│   ├── components/           # Komponentlər / Components
+│   ├── lib/                  # Yardımçı funksiyalar / Helper functions
+│   └── types/                # TypeScript tipləri / TypeScript types
+├── prisma/                   # Veritabanı şeması / Database schema
+└── public/                   # Statik fayllar / Static files
 ```
 
-## Available Scripts / Mövcud Scriptlər
+## 🚀 Quraşdırma / Installation
 
-- `npm run dev` - Start development server / İnkişaf serverini başlat
-- `npm run build` - Build for production / Production üçün build et
-- `npm run start` - Start production server / Production serverini başlat
-- `npm run lint` - Run ESLint / ESLint çalışdır
-- `npm run db:seed` - Seed database with sample data / Veritabanını nümunə məlumatlarla doldur
-- `npm run db:reset` - Reset and seed database / Veritabanını sıfırla və doldur
+### Tələblər / Requirements
+- Node.js 18+
+- npm və ya yarn
+- SQLite veritabanı / SQLite database
 
-## Environment Variables / Mühit Dəyişənləri
+### Addımlar / Steps
 
-See `env.example` for all required environment variables.
-Bütün tələb olunan mühit dəyişənləri üçün `env.example`-a baxın.
+1. **Bağımlılıqları yükləyin / Install dependencies:**
+```bash
+npm install
+```
 
-### Required / Tələb olunan
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - NextAuth.js secret key
-- `NEXTAUTH_URL` - Application URL
+2. **Veritabanını quraşdırın / Setup database:**
+```bash
+npx prisma migrate dev
+npx prisma db:seed
+```
 
-### Optional / İstəyə bağlı
-- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - Google OAuth
-- `FACEBOOK_CLIENT_ID` & `FACEBOOK_CLIENT_SECRET` - Facebook OAuth
-- `APPLE_CLIENT_ID` & `APPLE_CLIENT_SECRET` - Apple OAuth
-- `STRIPE_SECRET_KEY` & `STRIPE_WEBHOOK_SECRET` - Stripe payments
+3. **Mühit dəyişənlərini təyin edin / Set environment variables:**
+```bash
+cp .env.example .env.local
+# .env.local faylını redaktə edin / Edit .env.local file
+```
 
-## User Roles / İstifadəçi Rolları
+4. **Proyekti işə salın / Start the project:**
+```bash
+npm run dev
+```
 
-### Test Accounts / Test Hesabları
+## 🌐 URL Strukturu / URL Structure
 
-After running `npm run db:seed`, you can use these test accounts:
-`npm run db:seed` çalışdırdıqdan sonra bu test hesablarını istifadə edə bilərsiniz:
+- **Ana səhifə / Home:** `http://localhost:3000/`
+- **Məhsullar / Products:** `http://localhost:3000/products`
+- **Kateqoriyalar / Categories:** `http://localhost:3000/categories`
+- **Axtarış / Search:** `http://localhost:3000/search`
+- **Səbət / Cart:** `http://localhost:3000/cart`
+- **Ödəniş / Checkout:** `http://localhost:3000/checkout`
+- **Sifarişlər / Orders:** `http://localhost:3000/orders`
+- **Profil / Profile:** `http://localhost:3000/profile`
+- **Giriş / Login:** `http://localhost:3000/auth/signin`
 
-- **Admin**: admin@yusu.com
-- **Seller 1**: seller1@yusu.com
-- **Seller 2**: seller2@yusu.com
-- **Courier 1**: courier1@yusu.com
-- **Courier 2**: courier2@yusu.com
+## 🔐 Təhlükəsizlik / Security
 
-*Note: Use OAuth providers for authentication / Qeyd: Autentifikasiya üçün OAuth provider-ləri istifadə edin*
+- ✅ Rol əsaslı giriş nəzarəti / Role-based access control
+- ✅ JWT token autentifikasi / JWT token authentication
+- ✅ CSRF qorunması / CSRF protection
+- ✅ XSS qorunması / XSS protection
+- ✅ SQL injection qorunması / SQL injection protection
+- ✅ Ödəniş məlumatları şifrələmə / Payment data encryption
 
-## API Documentation / API Sənədləşməsi
+## 📚 API Sənədləşməsi / API Documentation
 
-Comprehensive API documentation is available in `/docs/API_DOCUMENTATION.md`
-Hərtərəfli API sənədləşməsi `/docs/API_DOCUMENTATION.md`-də mövcuddur
+### Customer API Endpoints
 
-## Deployment / Deploy
+#### Məhsullar / Products
+- `GET /api/products` - Məhsulları listələ / List products
+- `GET /api/products/[id]` - Məhsul detalları / Product details
+- `GET /api/products/search` - Məhsul axtarışı / Product search
 
-### Vercel (Recommended) / Vercel (Tövsiyə edilir)
+#### Kateqoriyalar / Categories
+- `GET /api/categories` - Kateqoriyaları listələ / List categories
+- `GET /api/categories/[id]` - Kateqoriya detalları / Category details
+- `GET /api/categories/[id]/products` - Kateqoriya məhsulları / Category products
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Set environment variables in Vercel dashboard
-4. Deploy!
+#### Səbət / Cart
+- `GET /api/cart` - Səbəti görüntülə / View cart
+- `POST /api/cart` - Səbətə əlavə et / Add to cart
+- `PUT /api/cart/[id]` - Səbət məhsulunu yenilə / Update cart item
+- `DELETE /api/cart/[id]` - Səbətdən sil / Remove from cart
 
-See `/docs/DEPLOYMENT_GUIDE.md` for detailed instructions.
-Ətraflı təlimatlar üçün `/docs/DEPLOYMENT_GUIDE.md`-ə baxın.
+#### Sifarişlər / Orders
+- `GET /api/orders` - Sifarişləri listələ / List orders
+- `POST /api/orders` - Yeni sifariş yarat / Create new order
+- `GET /api/orders/[id]` - Sifariş detalları / Order details
+- `PUT /api/orders/[id]` - Sifariş statusunu yenilə / Update order status
 
-## Contributing / Töhfə Vermək
+#### Ödəniş / Payment
+- `POST /api/payment/create-intent` - Ödəniş niyyəti yarat / Create payment intent
+- `POST /api/payment/webhook` - Stripe webhook / Stripe webhook
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🛒 Alış-veriş Prosesi / Shopping Process
 
-## Documentation / Sənədləşmə
+### 1. Məhsul Axtarışı / Product Search
+- Kateqoriya əsaslı axtarış / Category-based search
+- Açar söz axtarışı / Keyword search
+- Filtrləmə və sıralama / Filtering and sorting
+- Favorit məhsullar / Favorite products
 
-- [API Documentation](./docs/API_DOCUMENTATION.md)
-- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)
-- [User Manual](./docs/USER_MANUAL.md)
+### 2. Səbət İdarəetməsi / Cart Management
+- Məhsul əlavə etmə / Add products
+- Miqdar dəyişdirmə / Change quantity
+- Məhsul silmə / Remove products
+- Səbət hesablaması / Cart calculation
 
-## License / Lisenziya
+### 3. Ödəniş Prosesi / Checkout Process
+- Ünvan seçimi / Address selection
+- Ödəniş üsulu seçimi / Payment method selection
+- Sifariş təsdiqi / Order confirmation
+- Ödəniş emalı / Payment processing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-Bu layihə MIT Lisenziyası altında lisenziyalaşdırılıb - ətraflar üçün [LICENSE](LICENSE) faylına baxın.
+### 4. Sifariş İzləmə / Order Tracking
+- Sifariş statusu / Order status
+- Çatdırılma məlumatları / Delivery information
+- Sifariş tarixçəsi / Order history
 
-## Support / Dəstək
+## 📱 Mobil Uyğunluq / Mobile Compatibility
 
-- **Email**: support@yusu.com
-- **Documentation**: https://docs.yusu.com
-- **Issues**: https://github.com/yusu-ecommerce/issues
+- ✅ Responsive dizayn / Responsive design
+- ✅ Touch-friendly interfeys / Touch-friendly interface
+- ✅ PWA dəstəyi / PWA support
+- ✅ Offline rejim / Offline mode
+- ✅ Push bildirişlər / Push notifications
 
-## Acknowledgments / Təşəkkürlər
+## 🌍 Çoxdilli Dəstək / Multi-language Support
 
-- Next.js team for the amazing framework
-- Vercel for hosting and deployment
-- Prisma team for the excellent ORM
-- All contributors and users
+- ✅ Azərbaycan dili / Azerbaijani language
+- ✅ İngilis dili / English language
+- ✅ Dil dəyişdirmə / Language switching
+- ✅ Lokallaşdırma / Localization
+
+## 🤝 Töhfə Vermək / Contributing
+
+1. Fork edin / Fork the project
+2. Feature branch yaradın / Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit edin / Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push edin / Push to branch (`git push origin feature/AmazingFeature`)
+5. Pull Request yaradın / Open Pull Request
+
+## 📄 Lisenziya / License
+
+Bu proyekt MIT lisenziyası altında paylaşılır / This project is licensed under the MIT License.
+
+## 📞 Əlaqə / Contact
+
+- **Email:** customer@yusu.com
+- **Website:** https://yusu.com
+- **Support:** support@yusu.com
 
 ---
 
-**Made with ❤️ by Yusu Team / Yusu Komandası tərəfindən ❤️ ilə hazırlanıb**
+**Yusu Customer Platform** - Müştərilər üçün ən yaxşı həll / The best solution for customers

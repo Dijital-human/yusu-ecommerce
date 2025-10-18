@@ -1,0 +1,123 @@
+# Dependencies / Bağımlılıqlar
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables / Mühit dəyişənləri
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js build output / Next.js build çıxışı
+.next/
+out/
+build/
+dist/
+
+# Database / Veritabanı
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db*
+
+# Logs / Log faylları
+logs
+*.log
+
+# Runtime data / Runtime məlumatları
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul / Coverage qovluğu
+coverage/
+*.lcov
+
+# nyc test coverage / nyc test coverage
+.nyc_output
+
+# Dependency directories / Bağımlılıq qovluqları
+jspm_packages/
+
+# Optional npm cache directory / İstəyə bağlı npm cache qovluğu
+.npm
+
+# Optional eslint cache / İstəyə bağlı eslint cache
+.eslintcache
+
+# Microbundle cache / Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history / İstəyə bağlı REPL tarixçəsi
+.node_repl_history
+
+# Output of 'npm pack' / 'npm pack' çıxışı
+*.tgz
+
+# Yarn Integrity file / Yarn Integrity faylı
+.yarn-integrity
+
+# dotenv environment variables file / dotenv mühit dəyişənləri faylı
+.env
+
+# parcel-bundler cache (https://parceljs.org/) / parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output / Next.js build çıxışı
+.next
+
+# Nuxt.js build / generate output / Nuxt.js build / generate çıxışı
+.nuxt
+dist
+
+# Gatsby files / Gatsby faylları
+.cache/
+public
+
+# Storybook build outputs / Storybook build çıxışları
+.out
+.storybook-out
+
+# Temporary folders / Müvəqqəti qovluqlar
+tmp/
+temp/
+
+# Editor directories and files / Editor qovluqları və faylları
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files / OS tərəfindən yaradılan fayllar
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# SSL certificates / SSL sertifikatları
+*.pem
+*.key
+*.crt
+
+# Nginx configs / Nginx konfiqurasiyaları
+nginx.conf
+nginx-*.conf
+
+# Docker files / Docker faylları
+docker-compose.override.yml
+
+# Backup files / Backup faylları
+*.bak
+*.backup
