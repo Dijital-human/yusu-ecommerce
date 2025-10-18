@@ -12,6 +12,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+
 # Rebuild the source code only when needed / Yalnız lazım olduqda mənbə kodunu yenidən qur
 FROM base AS builder
 WORKDIR /app
