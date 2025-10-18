@@ -70,6 +70,7 @@ yusu-ecommerce/
 - npm və ya yarn
 - SQLite veritabanı / SQLite database
 
+
 ### Addımlar / Steps
 
 1. **Bağımlılıqları yükləyin / Install dependencies:**
