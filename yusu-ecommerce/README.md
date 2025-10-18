@@ -23,6 +23,8 @@ This platform provides a complete online shopping experience for customers, cove
 - ✅ Favorit məhsullar / Favorite products
 - ✅ Sifariş tarixçəsi / Order history
 
+
+
 ### Alış-veriş Təcrübəsi / Shopping Experience
 - ✅ Responsive dizayn / Responsive design
 - ✅ Sürətli yükləmə / Fast loading
