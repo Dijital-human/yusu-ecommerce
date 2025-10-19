@@ -125,7 +125,7 @@ export async function GET(
     // Calculate average rating for each product / Hər məhsul üçün orta reytinqi hesabla
     const productsWithRating = products.map(product => {
       const averageRating = product.reviews.length > 0
-        ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
+        ? product.reviews.reduce((sum, review: { rating: number }) => sum + review.rating, 0) / product.reviews.length
         : 0;
 
       return {
