@@ -31,18 +31,20 @@ export async function GET(request: NextRequest) {
       include: {
         children: {
           where: { isActive: true },
-          include: includeProducts ? {
-            products: {
-              where: { isActive: true },
-              take: 4, // Limit products per category / Kateqoriya başına məhsul məhdudiyyəti
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                images: true,
+          ...(includeProducts && {
+            include: {
+              products: {
+                where: { isActive: true },
+                take: 4, // Limit products per category / Kateqoriya başına məhsul məhdudiyyəti
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  images: true,
+                },
               },
             },
-          } : false,
+          }),
         },
         parent: true,
         _count: {

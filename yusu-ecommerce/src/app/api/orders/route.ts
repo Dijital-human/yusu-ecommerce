@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
         price: cartItem.product.price,
       });
       
-      orderData.totalAmount += cartItem.product.price * itemQuantity;
+      orderData.totalAmount += Number(cartItem.product.price) * itemQuantity;
     }
 
     // Create orders for each seller / Hər satıcı üçün sifariş yarat
