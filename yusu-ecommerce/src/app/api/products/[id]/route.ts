@@ -9,10 +9,11 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = params.id;
+    const resolvedParams = await params;
+    const productId = resolvedParams.id;
 
     // Fetch product with related data / Əlaqəli məlumatlarla məhsulu al
     const product = await prisma.product.findUnique({
