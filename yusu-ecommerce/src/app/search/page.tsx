@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -63,7 +63,7 @@ interface SearchFilters {
 type SortOption = "relevance" | "name" | "price" | "rating" | "createdAt";
 type SortOrder = "asc" | "desc";
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -567,5 +567,13 @@ export default function SearchPage() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }

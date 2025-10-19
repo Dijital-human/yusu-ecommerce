@@ -41,7 +41,10 @@ export function LoginForm({ onSubmit: externalOnSubmit, isLoading: externalIsLoa
 
   const onSubmit = async (data: LoginFormData) => {
     if (externalOnSubmit) {
-      await externalOnSubmit(data);
+      await externalOnSubmit({
+        email: data.email,
+        password: data.password || ""
+      });
       return;
     }
     

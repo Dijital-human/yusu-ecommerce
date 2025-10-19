@@ -13,6 +13,7 @@ import AppleProvider from "next-auth/providers/apple";
 import { prisma } from "@/lib/db";
 import { compare } from "bcryptjs";
 import { loginSchema } from "@/lib/validations/auth";
+import { UserRole } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
   // Database adapter / Veritabanı adapter-i
@@ -31,7 +32,6 @@ export const authOptions: NextAuthOptions = {
   // Pages configuration / Səhifələr konfiqurasiyası
   pages: {
     signIn: "/auth/signin",
-    signUp: "/auth/signup",
     error: "/auth/error",
   },
   
@@ -172,7 +172,7 @@ export const authOptions: NextAuthOptions = {
                 email: user.email!,
                 name: user.name,
                 image: user.image,
-                role: userRole,
+                role: userRole as UserRole,
                 isActive: true,
               },
             });
@@ -181,7 +181,7 @@ export const authOptions: NextAuthOptions = {
             if (existingUser.role !== userRole) {
               await prisma.user.update({
                 where: { email: user.email! },
-                data: { role: userRole },
+                data: { role: userRole as UserRole },
               });
             }
           }

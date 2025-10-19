@@ -45,7 +45,7 @@ export default function ProfilePage() {
     setFormData({
       name: session.user?.name || "",
       email: session.user?.email || "",
-      phone: session.user?.phone || "",
+      phone: (session.user as any)?.phone || "",
     });
   }, [session, status, router]);
 
@@ -75,7 +75,7 @@ export default function ProfilePage() {
     setFormData({
       name: session?.user?.name || "",
       email: session?.user?.email || "",
-      phone: session?.user?.phone || "",
+      phone: (session?.user as any)?.phone || "",
     });
     setIsEditing(false);
   };
@@ -228,7 +228,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="flex items-center p-3 bg-gray-50 rounded-md">
                   <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                  <span className="text-gray-900">{session.user?.phone || "Not provided"}</span>
+                  <span className="text-gray-900">{(session.user as any)?.phone || "Not provided"}</span>
                 </div>
               )}
             </div>

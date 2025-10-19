@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Enable experimental features / Eksperimental xüsusiyyətləri aktivləşdir
   serverExternalPackages: ['@prisma/client'],
   
+  
   // Image optimization configuration / Şəkil optimizasiyası konfiqurasiyası
   images: {
     domains: [
