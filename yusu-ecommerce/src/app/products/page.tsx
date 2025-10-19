@@ -327,7 +327,7 @@ export default function ProductsPage() {
           <ProductGrid
             products={products}
             isLoading={isLoading}
-            error={error}
+            error={error || undefined}
             showLoadMore={true}
             onLoadMore={handleLoadMore}
             hasMore={hasMore}

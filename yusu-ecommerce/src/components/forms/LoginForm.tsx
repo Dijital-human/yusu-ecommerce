@@ -19,10 +19,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
-export function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
+interface LoginFormProps {
+  onSubmit?: (data: { email: string; password: string }) => Promise<void>;
+  isLoading?: boolean;
+}
+
+export function LoginForm({ onSubmit: externalOnSubmit, isLoading: externalIsLoading }: LoginFormProps = {}) {
+  const [internalIsLoading, setInternalIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  
+  const isLoading = externalIsLoading ?? internalIsLoading;
 
   const {
     register,
@@ -33,7 +40,12 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
+    if (externalOnSubmit) {
+      await externalOnSubmit(data);
+      return;
+    }
+    
+    setInternalIsLoading(true);
     setError(null);
 
     try {
@@ -60,7 +72,7 @@ export function LoginForm() {
     } catch (error) {
       setError("An error occurred. Please try again / Xəta baş verdi. Yenidən cəhd edin");
     } finally {
-      setIsLoading(false);
+      setInternalIsLoading(false);
     }
   };
 
