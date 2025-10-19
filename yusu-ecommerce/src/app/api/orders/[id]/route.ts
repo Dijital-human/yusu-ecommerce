@@ -106,7 +106,7 @@ export async function GET(
 // PUT /api/orders/[id] - Update order status / Sifariş statusunu yenilə
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -118,7 +118,8 @@ export async function PUT(
       );
     }
 
-    const orderId = params.id;
+    const resolvedParams = await params;
+    const orderId = resolvedParams.id;
     const body = await request.json();
     const { status, courierId, notes } = body;
 
