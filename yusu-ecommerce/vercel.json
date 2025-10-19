@@ -8,6 +8,19 @@
       "maxDuration": 30
     }
   },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "DATABASE_URL": "postgresql://default:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb",
     "NEXTAUTH_SECRET": "your-secret-key-here-32-characters",
