@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useCart } from "@/store/CartContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { 
   ShoppingCart, 

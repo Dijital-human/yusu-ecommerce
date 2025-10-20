@@ -123,7 +123,6 @@ export async function POST(request: NextRequest) {
       where: {
         name: {
           equals: name,
-          mode: "insensitive",
         },
         parentId: parentId || null,
       },

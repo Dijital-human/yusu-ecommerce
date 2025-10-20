@@ -1,7 +1,6 @@
 /**
- * Footer Component / Altlıq Komponenti
+ * Footer Component
  * This component provides the main footer with links and information
- * Bu komponent əsas altlığı linklər və məlumatlarla təmin edir
  */
 
 import Link from "next/link";
@@ -27,14 +26,13 @@ export function Footer() {
           {/* Company Info / Şirkət Məlumatı */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">Y</span>
               </div>
               <span className="ml-2 text-xl font-bold">Yusu</span>
             </div>
             <p className="text-gray-300 text-sm">
-              Your trusted e-commerce platform for quality products and reliable delivery. 
-              / Keyfiyyətli məhsullar və etibarlı çatdırılma üçün etibar etdiyiniz e-ticarət platforması.
+              Your trusted e-commerce platform for quality products and reliable delivery.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
@@ -52,73 +50,73 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links / Sürətli Linklər */}
+          {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Quick Links / Sürətli Linklər</h3>
+            <h3 className="text-lg font-semibold">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  About Us / Haqqımızda
+                  About Us
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Contact / Əlaqə
+                  Contact
                 </Link>
               </li>
               <li>
                 <Link href="/careers" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Careers / Karyera
+                  Careers
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Blog / Bloq
+                  Blog
                 </Link>
               </li>
               <li>
                 <Link href="/help" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Help Center / Yardım Mərkəzi
+                  Help Center
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Service / Müştəri Xidməti */}
+          {/* Customer Service */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Customer Service / Müştəri Xidməti</h3>
+            <h3 className="text-lg font-semibold">Customer Service</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/shipping" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Shipping Info / Çatdırılma Məlumatı
+                  Shipping Info
                 </Link>
               </li>
               <li>
                 <Link href="/returns" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Returns / Qaytarma
+                  Returns
                 </Link>
               </li>
               <li>
                 <Link href="/size-guide" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Size Guide / Ölçü Bələdçisi
+                  Size Guide
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  FAQ / Tez-tez Verilən Suallar
+                  FAQ
                 </Link>
               </li>
               <li>
                 <Link href="/track-order" className="text-gray-300 hover:text-white transition-colors text-sm">
-                  Track Order / Sifarişi İzlə
+                  Track Order
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info / Əlaqə Məlumatı */}
+          {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Info / Əlaqə Məlumatı</h3>
+            <h3 className="text-lg font-semibold">Contact Info</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-gray-400" />
@@ -142,66 +140,66 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Features Section / Xüsusiyyətlər Bölməsi */}
+        {/* Features Section */}
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <Truck className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm">Free Shipping / Pulsuz Çatdırılma</h4>
-                <p className="text-gray-400 text-xs">On orders over $50 / $50-dan yuxarı sifarişlərdə</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="bg-green-600 p-2 rounded-lg">
-                <RotateCcw className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm">Easy Returns / Asan Qaytarma</h4>
-                <p className="text-gray-400 text-xs">30-day return policy / 30 günlük qaytarma siyasəti</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="bg-purple-600 p-2 rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm">Secure Payment / Təhlükəsiz Ödəniş</h4>
-                <p className="text-gray-400 text-xs">100% secure transactions / 100% təhlükəsiz əməliyyatlar</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <div className="bg-orange-600 p-2 rounded-lg">
-                <CreditCard className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm">Multiple Payment / Çoxlu Ödəniş</h4>
-                <p className="text-gray-400 text-xs">All major cards accepted / Bütün əsas kartlar qəbul edilir</p>
-              </div>
-            </div>
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-lg shadow-md">
+                    <Truck className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Free Shipping</h4>
+                    <p className="text-gray-400 text-xs">On orders over $50</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-br from-orange-400 to-orange-500 p-2 rounded-lg shadow-md">
+                    <RotateCcw className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Easy Returns</h4>
+                    <p className="text-gray-400 text-xs">30-day return policy</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-br from-orange-600 to-orange-700 p-2 rounded-lg shadow-md">
+                    <Shield className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Secure Payment</h4>
+                    <p className="text-gray-400 text-xs">100% secure transactions</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-2 rounded-lg shadow-md">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Multiple Payment</h4>
+                    <p className="text-gray-400 text-xs">All major cards accepted</p>
+                  </div>
+                </div>
           </div>
         </div>
 
-        {/* Bottom Bar / Alt Sətir */}
+        {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © 2024 Yusu. All rights reserved. / Bütün hüquqlar qorunur.
+              © 2024 Yusu. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Privacy Policy / Məxfilik Siyasəti
+                Privacy Policy
               </Link>
               <Link href="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Terms of Service / Xidmət Şərtləri
+                Terms of Service
               </Link>
               <Link href="/cookies" className="text-gray-400 hover:text-white transition-colors text-sm">
-                Cookie Policy / Cookie Siyasəti
+                Cookie Policy
               </Link>
             </div>
           </div>

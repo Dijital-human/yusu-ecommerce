@@ -11,7 +11,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { 
   Shield, 
   Lock, 
