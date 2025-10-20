@@ -1,7 +1,14 @@
 /**
  * Home Page Component / Ana Səhifə Komponenti
- * This component displays the main landing page
- * Bu komponent əsas açılış səhifəsini göstərir
+ * This component displays the main landing page with hero section, categories, featured products, and features
+ * Bu komponent əsas açılış səhifəsini göstərir - hero bölməsi, kateqoriyalar, tövsiyə edilən məhsullar və xüsusiyyətlər ilə
+ * 
+ * Features / Xüsusiyyətlər:
+ * - Hero slider with multiple slides / Çoxlu slayd ilə hero slider
+ * - Category showcase / Kateqoriya nümayişi
+ * - Featured products grid / Tövsiyə edilən məhsullar şəbəkəsi
+ * - Statistics section / Statistika bölməsi
+ * - Features section / Xüsusiyyətlər bölməsi
  */
 
 "use client";
@@ -29,78 +36,78 @@ import {
 const featuredProducts = [
   {
     id: 1,
-    name: "Wireless Headphones / Simsiz Qulaqlıq",
+    name: "Wireless Headphones",
     price: 99.99,
     originalPrice: 149.99,
     rating: 4.5,
     reviews: 128,
     image: "https://images.unsplash.com/photo-1505740420928-5e880c94d7c0?w=300&h=300&fit=crop",
-    badge: "Best Seller / Ən Çox Satılan"
+    badge: "Best Seller"
   },
   {
     id: 2,
-    name: "Smart Watch / Ağıllı Saat",
+    name: "Smart Watch",
     price: 199.99,
     originalPrice: 299.99,
     rating: 4.8,
     reviews: 89,
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop",
-    badge: "New / Yeni"
+    badge: "New"
   },
   {
     id: 3,
-    name: "Laptop Backpack / Laptop Çantası",
+    name: "Laptop Backpack",
     price: 49.99,
     originalPrice: 79.99,
     rating: 4.3,
     reviews: 256,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop",
-    badge: "Sale / Endirim"
+    badge: "Sale"
   },
   {
     id: 4,
-    name: "Bluetooth Speaker / Bluetooth Səsverici",
+    name: "Bluetooth Speaker",
     price: 79.99,
     originalPrice: 119.99,
     rating: 4.6,
     reviews: 167,
     image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=300&fit=crop",
-    badge: "Limited / Məhdud"
+    badge: "Limited"
   }
 ];
 
 const categories = [
   {
     id: 1,
-    name: "Electronics / Elektronika",
+    name: "Electronics",
     image: "https://images.unsplash.com/photo-1498049794561-7780c723c1c0?w=300&h=200&fit=crop",
     productCount: 1250
   },
   {
     id: 2,
-    name: "Fashion / Moda",
+    name: "Fashion",
     image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=200&fit=crop",
     productCount: 890
   },
   {
     id: 3,
-    name: "Home & Garden / Ev və Bağ",
+    name: "Home & Garden",
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=200&fit=crop",
     productCount: 567
   },
   {
     id: 4,
-    name: "Sports / İdman",
+    name: "Sports",
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop",
     productCount: 423
   }
 ];
 
 const stats = [
-  { icon: Users, label: "Happy Customers / Məmnun Müştərilər", value: "50K+" },
-  { icon: Package, label: "Products / Məhsullar", value: "3K+" },
-  { icon: Truck, label: "Orders Delivered / Çatdırılan Sifarişlər", value: "100K+" },
-  { icon: TrendingUp, label: "Growth Rate / Artım Tempi", value: "25%" }
+  { icon: Users, label: "Happy Customers", value: "50K+" },
+  { icon: Package, label: "Products", value: "3K+" },
+  { icon: Truck, label: "Orders Delivered", value: "100K+" },
+  { icon: TrendingUp, label: "Growth Rate", value: "25%" }
 ];
 
 export function HomePage() {
@@ -108,19 +115,19 @@ export function HomePage() {
 
   const heroSlides = [
     {
-      title: "Welcome to Yusu / Yusu-ya Xoş Gəlmisiniz",
-      subtitle: "Discover Amazing Products / Heyrətamiz Məhsulları Kəşf Edin",
-      description: "Shop the latest trends with fast delivery and secure payment / Ən son trendlərlə alış-veriş edin, sürətli çatdırılma və təhlükəsiz ödənişlə",
+      title: "Welcome to Yusu",
+      subtitle: "Discover Amazing Products",
+      description: "Shop the latest trends with fast delivery and secure payment",
       image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=600&fit=crop",
-      buttonText: "Shop Now / İndi Alış-veriş Et",
+      buttonText: "Shop Now",
       buttonLink: "/products"
     },
     {
-      title: "Best Deals / Ən Yaxşı Təkliflər",
-      subtitle: "Up to 70% Off / 70%-ə qədər Endirim",
-      description: "Don't miss out on our amazing discounts / Heyrətamiz endirimlərimizi qaçırmayın",
+      title: "Best Deals",
+      subtitle: "Up to 70% Off",
+      description: "Don't miss out on our amazing discounts",
       image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&h=600&fit=crop",
-      buttonText: "View Deals / Təkliflərə Bax",
+      buttonText: "View Deals",
       buttonLink: "/deals"
     }
   ];
@@ -203,10 +210,10 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Shop by Category / Kateqoriyaya Görə Alış-veriş
+              Shop by Category
             </h2>
             <p className="text-lg text-gray-600">
-              Find exactly what you're looking for / Axtardığınızı tapın
+              Find exactly what you're looking for
             </p>
           </div>
           
@@ -238,10 +245,10 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Featured Products / Tövsiyə Edilən Məhsullar
+              Featured Products
             </h2>
             <p className="text-lg text-gray-600">
-              Handpicked items just for you / Sizin üçün xüsusi seçilmiş məhsullar
+              Handpicked items just for you
             </p>
           </div>
           
@@ -302,7 +309,7 @@ export function HomePage() {
           <div className="text-center mt-12">
             <Link href="/products">
               <Button size="lg" variant="outline">
-                View All Products / Bütün Məhsullara Bax
+                View All Products
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -315,10 +322,10 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose Yusu? / Niyə Yusu Seçməli?
+              Why Choose Yusu?
             </h2>
             <p className="text-lg text-gray-600">
-              We provide the best shopping experience / Ən yaxşı alış-veriş təcrübəsini təmin edirik
+              We provide the best shopping experience
             </p>
           </div>
           
@@ -327,24 +334,24 @@ export function HomePage() {
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Truck className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Fast Delivery / Sürətli Çatdırılma</h3>
-              <p className="text-gray-600">Get your orders delivered within 24-48 hours / Sifarişlərinizi 24-48 saat ərzində alın</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+              <p className="text-gray-600">Get your orders delivered within 24-48 hours</p>
             </div>
             
             <div className="text-center">
               <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure Payment / Təhlükəsiz Ödəniş</h3>
-              <p className="text-gray-600">Your payment information is always safe and secure / Ödəniş məlumatlarınız həmişə təhlükəsizdir</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure Payment</h3>
+              <p className="text-gray-600">Your payment information is always safe and secure</p>
             </div>
             
             <div className="text-center">
               <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <RotateCcw className="h-8 w-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Easy Returns / Asan Qaytarma</h3>
-              <p className="text-gray-600">30-day return policy for all products / Bütün məhsullar üçün 30 günlük qaytarma siyasəti</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Easy Returns</h3>
+              <p className="text-gray-600">30-day return policy for all products</p>
             </div>
           </div>
         </div>
