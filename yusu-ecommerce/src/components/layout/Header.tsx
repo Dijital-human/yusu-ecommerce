@@ -182,22 +182,8 @@ export function Header() {
     };
   }, [isUserMenuOpen, isSignInOpen]);
 
-  // Close categories dropdown when clicking outside / Kateqoriya dropdown-u kənardan kliklədikdə bağla
-  useEffect(() => {
-    const handleCategoriesClickOutside = (event: MouseEvent) => {
-      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
-        setIsCategoriesOpen(false);
-      }
-    };
-
-    if (isCategoriesOpen) {
-      document.addEventListener('mousedown', handleCategoriesClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleCategoriesClickOutside);
-    };
-  }, [isCategoriesOpen]);
+  // Categories dropdown only closes with X button / Kateqoriya dropdown-u yalnız X düyməsi ilə bağlanır
+  // Click outside handler removed for desktop categories dropdown / Desktop kateqoriya dropdown üçün kənar klik handler-ı silindi
 
   // Close mobile menu when clicking outside / Mobil menyunu kənardan kliklədikdə bağla
   useEffect(() => {
