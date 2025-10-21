@@ -456,8 +456,8 @@ export function Header() {
                 ))}
                      </div>
 
-              {/* Footer Section / Alt Bölmə */}
-              <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-orange-200">
+              {/* Footer Section - Sticky / Sticky Alt Bölmə */}
+              <div className="sticky bottom-0 bg-white mt-6 md:mt-8 pt-4 md:pt-6 border-t border-orange-200 z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                   <div className="flex items-center space-x-2 md:space-x-4">
                     <div className="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm text-gray-600">
@@ -509,7 +509,7 @@ export function Header() {
             </div>
             
             {/* Scrollable Content / Scroll Edilə Bilən Məzmun */}
-            <div className="h-full overflow-y-auto">
+            <div className="h-full overflow-y-auto pb-20">
               <div className="p-4 md:p-6 lg:p-8">
                 {/* Categories Grid - Desktop Style / Desktop Stilində Kateqoriya Şəbəkəsi */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
@@ -549,9 +549,9 @@ export function Header() {
                   ))}
                 </div>
                 
-                {/* Footer Section - Desktop Style / Desktop Stilində Alt Bölmə */}
+                {/* Footer Section - Sticky / Sticky Alt Bölmə */}
                 <div 
-                  className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-orange-200 cursor-pointer"
+                  className="sticky bottom-0 bg-white mt-6 md:mt-8 pt-4 md:pt-6 border-t border-orange-200 cursor-pointer z-10"
                   onClick={handleMobileCategoriesFooterClick}
                 >
                   <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">

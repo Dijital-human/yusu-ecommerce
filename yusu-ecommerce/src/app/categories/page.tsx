@@ -120,12 +120,13 @@ export default function CategoriesPage() {
     <Layout>
       <div className="container mx-auto py-8 px-4">
         {/* Header / Başlıq */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Shop by Category / Kateqoriyaya Görə Alış-veriş
           </h1>
-          <p className="text-lg text-gray-600">
-            Discover products organized by category / Kateqoriyaya görə təşkil edilmiş məhsulları kəşf edin
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Discover amazing products organized by category. Find exactly what you're looking for with our comprehensive product catalog.
+            / Kateqoriyaya görə təşkil edilmiş möhtəşəm məhsulları kəşf edin. Hərtərəfli məhsul kataloqumuzla axtardığınızı tapın.
           </p>
         </div>
 
@@ -180,41 +181,46 @@ export default function CategoriesPage() {
         ) : (
           <div className={
             viewMode === "grid" 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              : "space-y-4"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+              : "space-y-6"
           }>
             {filteredCategories.map((category) => (
               <Link key={category.id} href={`/categories/${category.id}`}>
-                <Card className="group cursor-pointer hover:shadow-lg transition-shadow">
-                  <div className="relative overflow-hidden rounded-t-lg">
+                <Card className="group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0 shadow-lg">
+                  <div className="relative overflow-hidden rounded-t-xl">
                     <Image
                       src={category.image || "/placeholder-category.jpg"}
                       alt={category.name}
                       width={300}
                       height={200}
-                      className={`w-full object-cover group-hover:scale-105 transition-transform duration-300 ${
-                        viewMode === "grid" ? "h-48" : "h-32"
+                      className={`w-full object-cover group-hover:scale-110 transition-transform duration-500 ${
+                        viewMode === "grid" ? "h-56" : "h-40"
                       }`}
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/40 transition-all duration-300" />
                     <div className="absolute top-4 right-4">
-                      <Badge className="bg-white text-gray-900">
+                      <Badge className="bg-orange-500 text-white font-semibold px-3 py-1">
                         {category.productCount} products
                       </Badge>
                     </div>
+                    <div className="absolute bottom-4 left-4">
+                      <h3 className="text-white font-bold text-xl group-hover:text-orange-300 transition-colors">
+                        {category.name}
+                      </h3>
+                    </div>
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  <CardContent className="p-6 bg-gradient-to-br from-white to-gray-50">
+                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                       {category.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 font-medium">
                         {category.productCount} products available
                       </span>
-                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      <div className="flex items-center text-orange-500 group-hover:text-orange-600 transition-colors">
+                        <span className="text-sm font-medium mr-2">Explore</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -224,34 +230,34 @@ export default function CategoriesPage() {
         )}
 
         {/* Stats Section / Statistika Bölməsi */}
-        <div className="mt-16 bg-gray-50 rounded-lg p-8">
+        <div className="mt-20 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 shadow-lg">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Category Statistics / Kateqoriya Statistikaları
             </h2>
-            <p className="text-gray-600">
-              Overview of our product categories / Məhsul kateqoriyalarımızın ümumi baxışı
+            <p className="text-gray-600 text-lg">
+              Overview of our comprehensive product catalog / Hərtərəfli məhsul kataloqumuzun ümumi baxışı
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="text-center bg-white rounded-xl p-6 shadow-md">
+              <div className="text-4xl font-bold text-orange-600 mb-2">
                 {categories.length}
               </div>
-              <div className="text-gray-600">Total Categories / Ümumi Kateqoriyalar</div>
+              <div className="text-gray-600 font-medium">Total Categories / Ümumi Kateqoriyalar</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">
+            <div className="text-center bg-white rounded-xl p-6 shadow-md">
+              <div className="text-4xl font-bold text-green-600 mb-2">
                 {categories.reduce((sum, cat) => sum + cat.productCount, 0)}
               </div>
-              <div className="text-gray-600">Total Products / Ümumi Məhsullar</div>
+              <div className="text-gray-600 font-medium">Total Products / Ümumi Məhsullar</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
+            <div className="text-center bg-white rounded-xl p-6 shadow-md">
+              <div className="text-4xl font-bold text-purple-600 mb-2">
                 {Math.round(categories.reduce((sum, cat) => sum + cat.productCount, 0) / categories.length)}
               </div>
-              <div className="text-gray-600">Avg Products per Category / Kateqoriya üzrə Orta Məhsul</div>
+              <div className="text-gray-600 font-medium">Avg Products per Category / Kateqoriya üzrə Orta Məhsul</div>
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SimpleAdminAuth } from '@/lib/auth/simple-admin';
+// import { SimpleAdminAuth } from '@/lib/auth/simple-admin'; // Commented out - file deleted
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -11,7 +11,10 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force && npm run db:seed"
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "env:setup": "node ../scripts/setup-env.js",
+    "env:validate": "tsx -e \"import('./src/lib/env').then(m => console.log('Environment validation passed / Mühit doğrulaması keçdi'))\"",
+    "env:check": "npm run env:validate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

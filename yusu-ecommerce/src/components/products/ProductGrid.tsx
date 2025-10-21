@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/Button";
 import { Loader2, AlertCircle } from "lucide-react";

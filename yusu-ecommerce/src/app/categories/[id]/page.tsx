@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Layout } from "@/components/layout/Layout";
@@ -24,7 +24,6 @@ import {
   Grid,
   List,
   Search,
-  Filter,
   SortAsc,
   SortDesc,
   Package
@@ -67,7 +66,6 @@ type SortOrder = "asc" | "desc";
 
 export default function CategoryDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

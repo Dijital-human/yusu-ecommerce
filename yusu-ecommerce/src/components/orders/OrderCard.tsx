@@ -16,8 +16,6 @@ import {
   Package, 
   Truck, 
   User, 
-  Calendar,
-  MapPin,
   Eye,
   MoreVertical,
   CheckCircle,
