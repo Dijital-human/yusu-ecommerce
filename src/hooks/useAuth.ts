@@ -25,6 +25,11 @@ export function useAuth() {
   
   // Debug: Log session update function / Debug: Session update funksiyasını log et
   console.log("useAuth - update function:", typeof update);
+  
+  // Debug: Log session error if any / Debug: Session xətasını log et
+  if (status === "unauthenticated") {
+    console.log("useAuth - User is unauthenticated, checking for errors");
+  }
 
   // Redirect to login if not authenticated / Əgər autentifikasiya olunmayıbsa giriş səhifəsinə yönləndir
   const requireAuth = (redirectTo: string = "/auth/signin") => {
@@ -89,6 +94,13 @@ export function useAuth() {
       console.error("useAuth - session refresh error:", error);
     }
   };
+  
+  // Check if session is valid / Session-un etibarlı olub-olmadığını yoxla
+  const isSessionValid = () => {
+    if (isLoading) return false;
+    if (isAuthenticated && user) return true;
+    return false;
+  };
 
   return {
     // State / Vəziyyət
@@ -108,5 +120,6 @@ export function useAuth() {
     signInWithCredentials,
     handleSignOut,
     refreshSession,
+    isSessionValid,
   };
 }
