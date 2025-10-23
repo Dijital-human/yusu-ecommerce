@@ -167,3 +167,6 @@ next-env.d.ts
 
 /generated/prisma
 >>>>>>> 723d73e (Initial commit: yusu-ecommerce with Vercel configuration)
+
+# Google OAuth Client Secret Files
+client_secret_*.json
