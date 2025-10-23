@@ -43,6 +43,10 @@ export function Header() {
   const { state: cartState } = useCart();
   const { canAccess } = usePermissions();
 
+  // Debug: Log authentication state / Debug: Autentifikasiya vəziyyətini log et
+  console.log("Header - isAuthenticated:", isAuthenticated);
+  console.log("Header - user:", user);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };

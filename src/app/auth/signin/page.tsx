@@ -81,7 +81,20 @@ export default function SignInPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await signIn(provider, { callbackUrl: "/" });
+      const result = await signIn(provider, { 
+        redirect: false,
+        callbackUrl: "/"
+      });
+      
+      if (result?.error) {
+        setError(`Failed to sign in with ${provider} / ${provider} ilə giriş uğursuz`);
+      } else if (result?.ok) {
+        setSuccess(`Successfully signed in with ${provider} / ${provider} ilə uğurla giriş edildi`);
+        // Redirect to home page after successful OAuth / Uğurlu OAuth-dan sonra ana səhifəyə yönləndir
+        setTimeout(() => {
+          router.push("/");
+        }, 1000);
+      }
     } catch (err) {
       setError(`Failed to sign in with ${provider} / ${provider} ilə giriş uğursuz`);
     } finally {
