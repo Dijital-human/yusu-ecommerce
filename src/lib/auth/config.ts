@@ -47,6 +47,15 @@ export const authOptions: NextAuthOptions = {
           access_type: "offline",
           response_type: "code"
         }
+      },
+      profile(profile) {
+        console.log("Google profile received:", profile);
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
       }
     }),
     
@@ -149,6 +158,12 @@ export const authOptions: NextAuthOptions = {
         console.log("SignIn callback - account:", account);
         console.log("SignIn callback - profile:", profile);
         
+        // Check if user has required fields / İstifadəçinin tələb olunan sahələri yoxla
+        if (!user.email) {
+          console.error("SignIn error: User email is missing");
+          return false;
+        }
+        
         if (account?.provider === "credentials") {
           // For credentials provider, check if user exists and is active
           // Kimlik bilgiləri provayderi üçün istifadəçinin mövcudluğunu və aktivliyini yoxla
@@ -169,9 +184,16 @@ export const authOptions: NextAuthOptions = {
         if (account?.provider && profile) {
           console.log("OAuth provider:", account.provider);
           
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          });
+          // Check database connection / Veritabanı əlaqəsini yoxla
+          try {
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email! },
+            });
+            console.log("Database query successful, existing user:", existingUser);
+          } catch (dbError) {
+            console.error("Database error:", dbError);
+            return false;
+          }
           
           // Determine role based on email / Email-ə görə rol təyin et
           let userRole = "CUSTOMER"; // Default role / Varsayılan rol
@@ -198,25 +220,35 @@ export const authOptions: NextAuthOptions = {
           if (!existingUser) {
             // Create new user for OAuth / OAuth üçün yeni istifadəçi yarat
             console.log("Creating new user for OAuth");
-            await prisma.user.create({
-              data: {
-                email: user.email!,
-                name: user.name,
-                image: user.image,
-                role: userRole as UserRole,
-                isActive: true,
-              },
-            });
-            console.log("New user created successfully");
+            try {
+              await prisma.user.create({
+                data: {
+                  email: user.email!,
+                  name: user.name,
+                  image: user.image,
+                  role: userRole as UserRole,
+                  isActive: true,
+                },
+              });
+              console.log("New user created successfully");
+            } catch (createError) {
+              console.error("User creation error:", createError);
+              return false;
+            }
           } else {
             // Update existing user role if needed / Mövcud istifadəçinin rolunu lazım olduqda yenilə
             console.log("User exists, updating if needed");
-            if (existingUser.role !== userRole) {
-              await prisma.user.update({
-                where: { email: user.email! },
-                data: { role: userRole as UserRole },
-              });
-              console.log("User role updated");
+            try {
+              if (existingUser.role !== userRole) {
+                await prisma.user.update({
+                  where: { email: user.email! },
+                  data: { role: userRole as UserRole },
+                });
+                console.log("User role updated");
+              }
+            } catch (updateError) {
+              console.error("User update error:", updateError);
+              return false;
             }
           }
         }
