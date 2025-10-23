@@ -325,7 +325,4 @@ export const authOptions: NextAuthOptions = {
       console.log(`New user created: ${user.email}`);
     },
   },
-  
-  // Debug mode in development / Development-da debug rejimi
-  debug: process.env.NODE_ENV === "development",
 };
