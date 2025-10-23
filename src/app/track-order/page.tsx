@@ -23,13 +23,29 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+// Define order data type / Sifariş məlumatları tipini təyin et
+interface OrderData {
+  orderNumber: string;
+  status: string;
+  estimatedDelivery: string;
+  carrier: string;
+  trackingNumber: string;
+  timeline: {
+    status: string;
+    date: string;
+    time: string;
+    location: string;
+    completed: boolean;
+  }[];
+}
+
 export default function TrackOrderPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
-  const [orderData, setOrderData] = useState(null);
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock tracking data
-  const mockTrackingData = {
+  // Mock tracking data / Mock izləmə məlumatları
+  const mockTrackingData: OrderData = {
     orderNumber: "YUSU-2024-001",
     status: "In Transit",
     estimatedDelivery: "2024-12-20",

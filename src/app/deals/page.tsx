@@ -22,9 +22,23 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// Define deal data type / Endirim məlumatları tipini təyin et
+interface Deal {
+  id: string;
+  title: string;
+  description: string;
+  discount: string;
+  originalPrice: number;
+  salePrice: number;
+  image: string;
+  category: string;
+  validUntil: string;
+  isHot: boolean;
+}
+
 export default function DealsPage() {
-  // Mock deals data
-  const deals = [
+  // Mock deals data / Mock endirim məlumatları
+  const deals: Deal[] = [
     {
       id: "1",
       title: "Black Friday Sale",
