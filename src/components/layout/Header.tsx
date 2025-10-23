@@ -31,11 +31,13 @@ export function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  // Removed isSignInOpen - now using direct navigation to signin page
+  // isSignInOpen silindi - indi birbaşa signin səhifəsinə yönləndirilir
   const [isCategoriesClosing, setIsCategoriesClosing] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
-  const signInRef = useRef<HTMLDivElement>(null);
+  // Removed signInRef - no longer needed
+  // signInRef silindi - artıq lazım deyil
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, handleSignOut } = useAuth();
   const { state: cartState } = useCart();
@@ -64,9 +66,8 @@ export function Header() {
     }
   };
 
-  const toggleSignIn = () => {
-    setIsSignInOpen(!isSignInOpen);
-  };
+  // Removed toggleSignIn - now using direct navigation
+  // toggleSignIn silindi - indi birbaşa yönləndirmə istifadə edilir
 
   const handleSignOutClick = () => {
     handleSignOut();
@@ -168,19 +169,18 @@ export function Header() {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
-      if (signInRef.current && !signInRef.current.contains(event.target as Node)) {
-        setIsSignInOpen(false);
-      }
+      // Removed signIn dropdown handling
+      // signIn dropdown idarəsi silindi
     };
 
-    if (isUserMenuOpen || isSignInOpen) {
+    if (isUserMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isUserMenuOpen, isSignInOpen]);
+  }, [isUserMenuOpen]);
 
   // Categories dropdown only closes with X button / Kateqoriya dropdown-u yalnız X düyməsi ilə bağlanır
   // Click outside handler removed for desktop categories dropdown / Desktop kateqoriya dropdown üçün kənar klik handler-ı silindi
@@ -285,49 +285,21 @@ export function Header() {
                 </span>
             </button>
 
-            {/* Sign In Dropdown / Daxil Olma Dropdown */}
-            <div className="relative" ref={signInRef}>
-              <button
-                onClick={toggleSignIn}
-                className="flex items-center space-x-1 text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
-                >
-                  <User className="h-5 w-5" />
-                <span>Sign In</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* Sign In Dropdown Menu / Daxil Olma Dropdown Menyu */}
-              {isSignInOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 py-4 z-50">
-                  <div className="px-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Welcome to Yusu</h3>
-                    <div className="space-y-3">
-                      <input
-                        type="email"
-                        placeholder="Email address"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      />
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      />
-                      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-medium transition-colors duration-200">
-                        Sign In
-                      </button>
-                      <div className="text-center">
-                        <span className="text-gray-600">Don't have an account? </span>
-                        <Link href="/auth/signup" className="text-orange-600 hover:text-orange-700 font-medium">
-                          Sign Up
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                )}
-              </div>
+            {/* Sign In & Sign Up Links / Daxil Olma və Qeydiyyat Linkləri */}
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/auth/signin"
+                className="text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              >
+                Sign Up
+              </Link>
+            </div>
 
             {/* Mobile Menu Button / Mobil Menyu Düyməsi - Show at 1000px and below / 1000px və aşağıda göstər */}
             <button
