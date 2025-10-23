@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { UserRole } from "@/types";
 
 export function useAuth() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
 
   const isLoading = status === "loading";
@@ -22,6 +22,9 @@ export function useAuth() {
   console.log("useAuth - isAuthenticated:", isAuthenticated);
   console.log("useAuth - user:", user);
   console.log("useAuth - session:", session);
+  
+  // Debug: Log session update function / Debug: Session update funksiyasını log et
+  console.log("useAuth - update function:", typeof update);
 
   // Redirect to login if not authenticated / Əgər autentifikasiya olunmayıbsa giriş səhifəsinə yönləndir
   const requireAuth = (redirectTo: string = "/auth/signin") => {
@@ -72,7 +75,19 @@ export function useAuth() {
 
   // Sign out / Çıxış et
   const handleSignOut = (callbackUrl?: string) => {
+    console.log("useAuth - handleSignOut called");
     signOut({ callbackUrl: callbackUrl || "/" });
+  };
+  
+  // Force session refresh / Sessiyanı məcburi yenilə
+  const refreshSession = async () => {
+    console.log("useAuth - refreshSession called");
+    try {
+      await update();
+      console.log("useAuth - session refreshed");
+    } catch (error) {
+      console.error("useAuth - session refresh error:", error);
+    }
   };
 
   return {
@@ -92,5 +107,6 @@ export function useAuth() {
     signInWithProvider,
     signInWithCredentials,
     handleSignOut,
+    refreshSession,
   };
 }

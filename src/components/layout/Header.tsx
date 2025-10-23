@@ -39,13 +39,21 @@ export function Header() {
   // Removed signInRef - no longer needed
   // signInRef silindi - artıq lazım deyil
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, handleSignOut } = useAuth();
+  const { user, isAuthenticated, handleSignOut, refreshSession } = useAuth();
   const { state: cartState } = useCart();
   const { canAccess } = usePermissions();
 
   // Debug: Log authentication state / Debug: Autentifikasiya vəziyyətini log et
   console.log("Header - isAuthenticated:", isAuthenticated);
   console.log("Header - user:", user);
+  
+  // Force session refresh on mount / Mount zamanı sessiyanı məcburi yenilə
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading) {
+      console.log("Header - forcing session refresh");
+      refreshSession();
+    }
+  }, [isAuthenticated, isLoading, refreshSession]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
