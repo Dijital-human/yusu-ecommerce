@@ -10,12 +10,24 @@ import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-09-30.clover",
-});
+// Stripe configuration - only initialize if API key is available
+// Stripe konfiqurasiyası - yalnız API açarı mövcud olduqda başlat
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-09-30.clover",
+    })
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is configured / Stripe konfiqurasiyasını yoxla
+    if (!stripe) {
+      return NextResponse.json(
+        { success: false, error: "Payment system not configured / Ödəniş sistemi konfiqurasiya edilməyib" },
+        { status: 503 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {

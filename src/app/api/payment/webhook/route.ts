@@ -8,14 +8,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-09-30.clover",
-});
+// Stripe configuration - only initialize if API key is available
+// Stripe konfiqurasiyası - yalnız API açarı mövcud olduqda başlat
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-09-30.clover",
+    })
+  : null;
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is configured / Stripe konfiqurasiyasını yoxla
+    if (!stripe || !webhookSecret) {
+      return NextResponse.json(
+        { error: "Payment system not configured / Ödəniş sistemi konfiqurasiya edilməyib" },
+        { status: 503 }
+      );
+    }
+
     const body = await request.text();
     const signature = request.headers.get("stripe-signature");
 
