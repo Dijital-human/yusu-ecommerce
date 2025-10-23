@@ -131,6 +131,17 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     
+    // Redirect callback / Yönləndirmə callback-i
+    async redirect({ url, baseUrl }) {
+      console.log("Redirect callback - url:", url, "baseUrl:", baseUrl);
+      // If url is relative, make it absolute / Əgər url nisbi-dirsə, onu mütləq edin
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // If url is on the same origin, allow it / Əgər url eyni mənbədə-dirsə, icazə verin
+      else if (new URL(url).origin === baseUrl) return url;
+      // Otherwise redirect to baseUrl / Əks halda baseUrl-ə yönləndirin
+      return baseUrl;
+    },
+    
     // Sign in callback / Giriş callback-i
     async signIn({ user, account, profile }) {
       try {
