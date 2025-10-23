@@ -17,6 +17,12 @@ export function useAuth() {
   const isAuthenticated = status === "authenticated";
   const user = session?.user;
 
+  // Debug: Log authentication state / Debug: Autentifikasiya vəziyyətini log et
+  console.log("useAuth - status:", status);
+  console.log("useAuth - isAuthenticated:", isAuthenticated);
+  console.log("useAuth - user:", user);
+  console.log("useAuth - session:", session);
+
   // Redirect to login if not authenticated / Əgər autentifikasiya olunmayıbsa giriş səhifəsinə yönləndir
   const requireAuth = (redirectTo: string = "/auth/signin") => {
     useEffect(() => {

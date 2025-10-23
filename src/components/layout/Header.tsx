@@ -289,92 +289,94 @@ export function Header() {
             </button>
 
             {/* User Menu / Sign In & Sign Up Links / İstifadəçi Menyu / Daxil Olma və Qeydiyyat Linkləri */}
-            {isAuthenticated ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={toggleUserMenu}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <span className="hidden sm:block">{user?.name || 'User'}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={toggleUserMenu}
+                    className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
+                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <span className="hidden sm:block">{user?.name || 'User'}</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
 
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-4 z-50">
-                    <div className="px-6">
-                      <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">
-                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                          </span>
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 py-4 z-50">
+                      <div className="px-6">
+                        <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200">
+                          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">
+                              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{user?.name || 'User'}</h3>
+                            <p className="text-sm text-gray-600">{user?.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{user?.name || 'User'}</h3>
-                          <p className="text-sm text-gray-600">{user?.email}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Link
-                          href="/profile"
-                          className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
-                          onClick={handleLinkClick}
-                        >
-                          <User className="h-4 w-4" />
-                          <span>My Profile</span>
-                        </Link>
-                        <Link
-                          href="/orders"
-                          className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
-                          onClick={handleLinkClick}
-                        >
-                          <Package className="h-4 w-4" />
-                          <span>My Orders</span>
-                        </Link>
-                        <Link
-                          href="/settings"
-                          className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
-                          onClick={handleLinkClick}
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span>Settings</span>
-                        </Link>
-                        <div className="border-t border-gray-200 pt-2">
-                          <button
-                            onClick={handleSignOutClick}
-                            className="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 w-full text-left"
+                        <div className="space-y-2">
+                          <Link
+                            href="/profile"
+                            className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
+                            onClick={handleLinkClick}
                           >
-                            <ArrowRight className="h-4 w-4" />
-                            <span>Sign Out</span>
-                          </button>
+                            <User className="h-4 w-4" />
+                            <span>My Profile</span>
+                          </Link>
+                          <Link
+                            href="/orders"
+                            className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
+                            onClick={handleLinkClick}
+                          >
+                            <Package className="h-4 w-4" />
+                            <span>My Orders</span>
+                          </Link>
+                          <Link
+                            href="/settings"
+                            className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
+                            onClick={handleLinkClick}
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Settings</span>
+                          </Link>
+                          <div className="border-t border-gray-200 pt-2">
+                            <button
+                              onClick={handleSignOutClick}
+                              className="flex items-center space-x-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 w-full text-left"
+                            >
+                              <ArrowRight className="h-4 w-4" />
+                              <span>Sign Out</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/auth/signin"
-                  className="text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="text-gray-700 hover:text-orange-600 transition-colors duration-200 font-medium"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Button / Mobil Menyu Düyməsi - Show at 1000px and below / 1000px və aşağıda göstər */}
             <button
