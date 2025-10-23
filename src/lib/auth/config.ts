@@ -37,18 +37,17 @@ export const authOptions: NextAuthOptions = {
   
   // Providers configuration / Provayderlər konfiqurasiyası
   providers: [
-    // OAuth providers temporarily disabled for testing / Test üçün OAuth provayderlər müvəqqəti deaktiv
     // Google Provider / Google Provayderi
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    // }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     
     // Facebook Provider / Facebook Provayderi
-    // FacebookProvider({
-    //   clientId: process.env.FACEBOOK_CLIENT_ID!,
-    //   clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    // }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    }),
     
     // Apple Provider / Apple Provayderi
     // AppleProvider({
