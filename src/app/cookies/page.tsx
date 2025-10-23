@@ -16,7 +16,6 @@ import {
   Shield, 
   Eye, 
   Target, 
-  BarChart3,
   CheckCircle,
   XCircle
 } from "lucide-react";
