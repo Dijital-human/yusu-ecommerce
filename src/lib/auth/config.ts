@@ -41,6 +41,13 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
     
     // Facebook Provider / Facebook Provayderi
@@ -219,6 +226,9 @@ export const authOptions: NextAuthOptions = {
     },
     async signOut({ session, token }) {
       console.log(`User signed out: ${session?.user?.email}`);
+    },
+    async createUser({ user }) {
+      console.log(`New user created: ${user.email}`);
     },
   },
   
