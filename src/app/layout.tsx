@@ -4,12 +4,15 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/store/CartContext";
 
 export const metadata: Metadata = {
-  title: "Yusu - Customer Platform",
+  title: "Azliner - Customer Platform",
   description: "Reliable e-commerce platform for customers with quality products, fast delivery and secure payment.",
   keywords: "ecommerce, online shopping, customer, products, delivery, secure payment",
-  authors: [{ name: "Yusu Customer Team" }],
+  authors: [{ name: "Azliner Customer Team" }],
+  verification: {
+    google: "4-KWiHdjRIvPfaqySQQcJqtdECwwbEmsP0QRoSg3cM0",
+  },
   openGraph: {
-    title: "Yusu - Customer Platform",
+    title: "Azliner - Customer Platform",
     description: "Quality products, fast delivery and secure payment.",
     type: "website",
     locale: "en_US",
