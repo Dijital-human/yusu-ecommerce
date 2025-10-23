@@ -39,7 +39,7 @@ export function Header() {
   // Removed signInRef - no longer needed
   // signInRef silindi - artıq lazım deyil
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, handleSignOut, refreshSession } = useAuth();
+  const { user, isAuthenticated, isLoading, handleSignOut, refreshSession } = useAuth();
   const { state: cartState } = useCart();
   const { canAccess } = usePermissions();
 
