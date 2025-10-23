@@ -125,8 +125,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // JWT callback / JWT callback-i
     async jwt({ token, user, account }) {
+      console.log("JWT callback - token:", token);
+      console.log("JWT callback - user:", user);
+      console.log("JWT callback - account:", account);
+      
       // Initial sign in / İlkin giriş
       if (account && user) {
+        console.log("JWT callback - initial sign in, user role:", user.role);
         return {
           ...token,
           role: user.role,
@@ -135,14 +140,25 @@ export const authOptions: NextAuthOptions = {
       }
       
       // Return previous token if the access token has not expired yet / Əgər access token hələ bitməyibsə əvvəlki token-i qaytar
+      console.log("JWT callback - returning existing token");
       return token;
     },
     
     // Session callback / Sessiya callback-i
     async session({ session, token }) {
+      console.log("Session callback - session:", session);
+      console.log("Session callback - token:", token);
+      
       if (token) {
+        // Ensure session.user exists / session.user-ın mövcud olduğundan əmin ol
+        if (!session.user) {
+          session.user = {} as any;
+        }
+        
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        
+        console.log("Session callback - updated session.user:", session.user);
       }
       
       // Debug: Log session data / Debug: Sessiya məlumatlarını log et
