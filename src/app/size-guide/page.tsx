@@ -1,7 +1,7 @@
 "use client";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Ruler, Shirt, Shoe, User } from "lucide-react";
+import { Ruler, Shirt, Footprints, User } from "lucide-react";
 
 export default function SizeGuidePage() {
   const sizeCharts = {
@@ -66,7 +66,7 @@ export default function SizeGuidePage() {
               <Card className="shadow-lg text-center">
                 <CardContent className="p-6">
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Shoe className="h-8 w-8 text-orange-600" />
+                    <Footprints className="h-8 w-8 text-orange-600" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">Foot Length</h3>
                   <p className="text-gray-600">Measure from the back of your heel to the tip of your longest toe.</p>
@@ -160,7 +160,7 @@ export default function SizeGuidePage() {
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center">
-                  <Shoe className="h-6 w-6 text-orange-500 mr-3" />
+                  <Footprints className="h-6 w-6 text-orange-500 mr-3" />
                   Shoe Tips
                 </CardTitle>
               </CardHeader>
