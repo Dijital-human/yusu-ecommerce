@@ -83,9 +83,8 @@ export function Header() {
     setIsCategoriesOpen(false);
   };
 
-  const handleSignInClick = () => {
-    setIsSignInOpen(false);
-  };
+  // Removed handleSignInClick - no longer needed
+  // handleSignInClick silindi - artıq lazım deyil
 
   // Mock categories data for dropdown / Dropdown üçün test kateqoriya məlumatları
   const categoriesData = [
