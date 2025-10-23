@@ -188,6 +188,7 @@ export default function SignUpPage() {
                           onChange={handleChange}
                           placeholder="Enter your full name"
                           className="pl-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="name"
                           required
                         />
                       </div>
@@ -206,6 +207,7 @@ export default function SignUpPage() {
                           onChange={handleChange}
                           placeholder="Enter your email"
                           className="pl-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="email"
                           required
                         />
                       </div>
@@ -224,6 +226,7 @@ export default function SignUpPage() {
                           onChange={handleChange}
                           placeholder="Enter your phone number"
                           className="pl-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="tel"
                         />
                       </div>
                     </div>
@@ -247,6 +250,7 @@ export default function SignUpPage() {
                           onChange={handleChange}
                           placeholder="Create a password"
                           className="pl-10 pr-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="new-password"
                           required
                         />
                         <button
@@ -272,6 +276,7 @@ export default function SignUpPage() {
                           onChange={handleChange}
                           placeholder="Confirm your password"
                           className="pl-10 pr-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="new-password"
                           required
                         />
                         <button

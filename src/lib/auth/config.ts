@@ -19,6 +19,9 @@ export const authOptions: NextAuthOptions = {
   // Database adapter / Veritabanı adapter-i
   adapter: PrismaAdapter(prisma),
   
+  // Secret key / Gizli açar
+  secret: process.env.NEXTAUTH_SECRET,
+  
   // Session strategy / Sessiya strategiyası
   session: {
     strategy: "jwt",
@@ -28,6 +31,9 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days / 30 gün
   },
+  
+  // Debug mode in development / Development-da debug rejimi
+  debug: process.env.NODE_ENV === "development",
   
   // Pages configuration / Səhifələr konfiqurasiyası
   pages: {
@@ -125,14 +131,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // JWT callback / JWT callback-i
     async jwt({ token, user, account }) {
-      console.log("JWT callback - token:", token);
-      console.log("JWT callback - user:", user);
-      console.log("JWT callback - account:", account);
+      console.log("SERVER LOG: JWT callback - token:", token);
+      console.log("SERVER LOG: JWT callback - user:", user);
+      console.log("SERVER LOG: JWT callback - account:", account);
       
       // Initial sign in / İlkin giriş
       if (account && user) {
-        console.log("JWT callback - initial sign in, user role:", user.role);
-        return {
+        console.log("SERVER LOG: JWT callback - initial sign in, user role:", user.role);
+        const newToken = {
           ...token,
           id: user.id,
           name: user.name,
@@ -140,17 +146,19 @@ export const authOptions: NextAuthOptions = {
           picture: user.image,
           role: user.role,
         };
+        console.log("SERVER LOG: JWT callback - new token:", newToken);
+        return newToken;
       }
       
       // Return previous token if the access token has not expired yet / Əgər access token hələ bitməyibsə əvvəlki token-i qaytar
-      console.log("JWT callback - returning existing token");
+      console.log("SERVER LOG: JWT callback - returning existing token");
       return token;
     },
     
     // Session callback / Sessiya callback-i
     async session({ session, token }) {
-      console.log("Session callback - session:", session);
-      console.log("Session callback - token:", token);
+      console.log("SERVER LOG: Session callback - session:", session);
+      console.log("SERVER LOG: Session callback - token:", token);
       
       if (token) {
         // Ensure session.user exists / session.user-ın mövcud olduğundan əmin ol
@@ -165,11 +173,11 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.image = token.picture as string;
         
-        console.log("Session callback - updated session.user:", session.user);
+        console.log("SERVER LOG: Session callback - updated session.user:", session.user);
       }
       
       // Debug: Log session data / Debug: Sessiya məlumatlarını log et
-      console.log("Session data:", session);
+      console.log("SERVER LOG: Session data:", session);
       
       return session;
     },
@@ -188,9 +196,9 @@ export const authOptions: NextAuthOptions = {
     // Sign in callback / Giriş callback-i
     async signIn({ user, account, profile }) {
       try {
-        console.log("SignIn callback - user:", user);
-        console.log("SignIn callback - account:", account);
-        console.log("SignIn callback - profile:", profile);
+        console.log("SERVER LOG: SignIn callback - user:", user);
+        console.log("SERVER LOG: SignIn callback - account:", account);
+        console.log("SERVER LOG: SignIn callback - profile:", profile);
         
         // Check if user has required fields / İstifadəçinin tələb olunan sahələri yoxla
         if (!user.email) {

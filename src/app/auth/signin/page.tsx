@@ -187,6 +187,7 @@ export default function SignInPage() {
                           onChange={handleInputChange}
                           placeholder="Enter your email"
                           className="pl-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="email"
                           required
                         />
                       </div>
@@ -205,6 +206,7 @@ export default function SignInPage() {
                           onChange={handleInputChange}
                           placeholder="Enter your password"
                           className="pl-10 pr-10 h-12 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                          autoComplete="current-password"
                           required
                         />
                         <button
