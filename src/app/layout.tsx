@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SessionProvider } from "@/components/providers/SessionProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/store/CartContext";
 
 export const metadata: Metadata = {
@@ -24,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <SessionProvider>
+        <AuthProvider>
           <CartProvider>
             {children}
           </CartProvider>
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
