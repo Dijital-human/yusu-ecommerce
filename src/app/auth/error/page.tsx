@@ -1,13 +1,14 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -109,5 +110,33 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full">
+            <Card className="shadow-2xl border-0">
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  Loading... / Yüklənir...
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-600">Please wait while we load the error details. / Xəta təfərrüatlarını yükləyərkən gözləyin.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
