@@ -118,6 +118,9 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
       }
       
+      // Debug: Log session data / Debug: Sessiya məlumatlarını log et
+      console.log("Session data:", session);
+      
       return session;
     },
     
