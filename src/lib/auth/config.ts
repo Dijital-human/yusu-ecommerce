@@ -12,8 +12,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
 import { prisma } from "@/lib/db";
 import { compare } from "bcryptjs";
-import { loginSchema } from "@/lib/validations/auth";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/types";
 
 export const authOptions: NextAuthOptions = {
   // Database adapter / Veritabanı adapter-i
