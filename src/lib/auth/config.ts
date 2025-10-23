@@ -127,6 +127,10 @@ export const authOptions: NextAuthOptions = {
     // Sign in callback / Giriş callback-i
     async signIn({ user, account, profile }) {
       try {
+        console.log("SignIn callback - user:", user);
+        console.log("SignIn callback - account:", account);
+        console.log("SignIn callback - profile:", profile);
+        
         if (account?.provider === "credentials") {
           // For credentials provider, check if user exists and is active
           // Kimlik bilgiləri provayderi üçün istifadəçinin mövcudluğunu və aktivliyini yoxla
@@ -135,14 +139,18 @@ export const authOptions: NextAuthOptions = {
           });
           
           if (!existingUser || !existingUser.isActive) {
+            console.log("Credentials: User not found or inactive");
             return false;
           }
           
+          console.log("Credentials: User authenticated successfully");
           return true;
         }
         
         // For OAuth providers / OAuth provayderlər üçün
         if (account?.provider && profile) {
+          console.log("OAuth provider:", account.provider);
+          
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
           });
@@ -167,8 +175,11 @@ export const authOptions: NextAuthOptions = {
             userRole = "COURIER";
           }
           
+          console.log("User role determined:", userRole);
+          
           if (!existingUser) {
             // Create new user for OAuth / OAuth üçün yeni istifadəçi yarat
+            console.log("Creating new user for OAuth");
             await prisma.user.create({
               data: {
                 email: user.email!,
@@ -178,17 +189,21 @@ export const authOptions: NextAuthOptions = {
                 isActive: true,
               },
             });
+            console.log("New user created successfully");
           } else {
             // Update existing user role if needed / Mövcud istifadəçinin rolunu lazım olduqda yenilə
+            console.log("User exists, updating if needed");
             if (existingUser.role !== userRole) {
               await prisma.user.update({
                 where: { email: user.email! },
                 data: { role: userRole as UserRole },
               });
+              console.log("User role updated");
             }
           }
         }
         
+        console.log("SignIn callback returning true");
         return true;
       } catch (error) {
         console.error("Sign in error:", error);
