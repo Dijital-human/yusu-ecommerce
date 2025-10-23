@@ -195,9 +195,10 @@ export const authOptions: NextAuthOptions = {
         if (account?.provider && profile) {
           console.log("OAuth provider:", account.provider);
           
-          // Check database connection / Veritabanı əlaqəsini yoxla
+          // Check database connection and get existing user / Veritabanı əlaqəsini yoxla və mövcud istifadəçini al
+          let existingUser;
           try {
-            const existingUser = await prisma.user.findUnique({
+            existingUser = await prisma.user.findUnique({
               where: { email: user.email! },
             });
             console.log("Database query successful, existing user:", existingUser);
