@@ -22,9 +22,6 @@ export const authOptions: NextAuthOptions = {
   // Secret key / Gizli açar
   secret: process.env.NEXTAUTH_SECRET,
   
-  // Base URL / Əsas URL
-  baseURL: process.env.NEXTAUTH_URL,
-  
   // Session strategy / Sessiya strategiyası
   session: {
     strategy: "jwt",
