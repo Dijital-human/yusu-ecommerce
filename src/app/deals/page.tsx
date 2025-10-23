@@ -1,3 +1,9 @@
+/**
+ * Deals Page / Endirimlər Səhifəsi
+ * This page displays hot deals and special offers
+ * Bu səhifə isti endirimlər və xüsusi təkliflər göstərir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";

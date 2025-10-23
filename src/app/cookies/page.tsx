@@ -1,3 +1,9 @@
+/**
+ * Cookie Policy Page / Cookie Siyasəti Səhifəsi
+ * This page displays cookie policy and allows users to manage cookie preferences
+ * Bu səhifə cookie siyasətini göstərir və istifadəçilərə cookie tərcihlərini idarə etməyə imkan verir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";

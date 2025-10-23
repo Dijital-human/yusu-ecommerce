@@ -1,3 +1,9 @@
+/**
+ * Privacy Policy Page / Məxfilik Siyasəti Səhifəsi
+ * This page displays the privacy policy and data protection information
+ * Bu səhifə məxfilik siyasətini və məlumat qoruma məlumatlarını göstərir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";

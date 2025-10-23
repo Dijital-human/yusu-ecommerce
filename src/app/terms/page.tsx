@@ -1,3 +1,9 @@
+/**
+ * Terms of Service Page / Xidmət Şərtləri Səhifəsi
+ * This page displays the terms and conditions for using the website
+ * Bu səhifə veb-saytından istifadə üçün şərtləri və qaydaları göstərir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";

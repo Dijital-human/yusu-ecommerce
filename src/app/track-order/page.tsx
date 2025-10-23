@@ -1,3 +1,9 @@
+/**
+ * Track Order Page / Sifariş İzləmə Səhifəsi
+ * This page allows users to track their orders using tracking number
+ * Bu səhifə istifadəçilərə izləmə nömrəsi ilə sifarişlərini izləməyə imkan verir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";

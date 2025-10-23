@@ -1,3 +1,9 @@
+/**
+ * FAQ Page / Tez-tez Verilən Suallar Səhifəsi
+ * This page displays frequently asked questions with interactive sections
+ * Bu səhifə tez-tez verilən sualları interaktiv bölmələrlə göstərir
+ */
+
 "use client";
 
 import { Layout } from "@/components/layout/Layout";
