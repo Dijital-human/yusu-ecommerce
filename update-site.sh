@@ -37,9 +37,9 @@ echo "🌐 Sayt yoxlanır / Checking website..."
 
 # Test all subdomains / Bütün subdomain-ləri test et
 echo "🔗 Test edilir / Testing:"
-curl -I https://yusu.com
-curl -I https://admin.yusu.com
-curl -I https://seller.yusu.com
-curl -I https://courier.yusu.com
+curl -I https://azliner.info
+curl -I https://admin.azliner.info
+curl -I https://seller.azliner.info
+curl -I https://courier.azliner.info
 
 echo "🎉 Sayt uğurla yeniləndi / Site updated successfully!"

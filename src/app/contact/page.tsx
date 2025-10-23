@@ -168,8 +168,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Email</h3>
-                      <p className="text-gray-600">info@yusu.com</p>
-                      <p className="text-gray-600">support@yusu.com</p>
+                      <p className="text-gray-600">info@azliner.info</p>
+                      <p className="text-gray-600">support@azliner.info</p>
                     </div>
                   </div>
                   

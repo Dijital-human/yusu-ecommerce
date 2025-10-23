@@ -133,11 +133,11 @@ async function main() {
   console.log('👑 Creating admin user... / Admin istifadəçi yaradılır...');
   
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@yusu.com' },
+    where: { email: 'admin@azliner.info' },
     update: {},
     create: {
       id: 'admin-1',
-      email: 'admin@yusu.com',
+      email: 'admin@azliner.info',
       name: 'Admin User',
       role: 'ADMIN',
       phone: '+994501234567',
@@ -152,11 +152,11 @@ async function main() {
   
   const sellers = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'seller1@yusu.com' },
+      where: { email: 'seller1@azliner.info' },
       update: {},
       create: {
         id: 'seller-1',
-        email: 'seller1@yusu.com',
+        email: 'seller1@azliner.info',
         name: 'Tech Gadgets Inc.',
         role: 'SELLER',
         phone: '+994501234568',
@@ -164,11 +164,11 @@ async function main() {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'seller2@yusu.com' },
+      where: { email: 'seller2@azliner.info' },
       update: {},
       create: {
         id: 'seller-2',
-        email: 'seller2@yusu.com',
+        email: 'seller2@azliner.info',
         name: 'Style Haven Boutique',
         role: 'SELLER',
         phone: '+994501234569',
@@ -184,11 +184,11 @@ async function main() {
   
   const couriers = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'courier1@yusu.com' },
+      where: { email: 'courier1@azliner.info' },
       update: {},
       create: {
         id: 'courier-1',
-        email: 'courier1@yusu.com',
+        email: 'courier1@azliner.info',
         name: 'Fast Delivery John',
         role: 'COURIER',
         phone: '+994501234570',
@@ -196,11 +196,11 @@ async function main() {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'courier2@yusu.com' },
+      where: { email: 'courier2@azliner.info' },
       update: {},
       create: {
         id: 'courier-2',
-        email: 'courier2@yusu.com',
+        email: 'courier2@azliner.info',
         name: 'Swift Ship Jane',
         role: 'COURIER',
         phone: '+994501234571',
@@ -577,11 +577,11 @@ async function main() {
 
   console.log('🎉 Database seeding completed! / Veritabanı seeding tamamlandı!');
   console.log('\n📋 Created accounts / Yaradılan hesablar:');
-  console.log('👑 Admin: admin@yusu.com');
-  console.log('🏪 Seller 1: seller1@yusu.com');
-  console.log('🏪 Seller 2: seller2@yusu.com');
-  console.log('🚚 Courier 1: courier1@yusu.com');
-  console.log('🚚 Courier 2: courier2@yusu.com');
+  console.log('👑 Admin: admin@azliner.info');
+  console.log('🏪 Seller 1: seller1@azliner.info');
+  console.log('🏪 Seller 2: seller2@azliner.info');
+  console.log('🚚 Courier 1: courier1@azliner.info');
+  console.log('🚚 Courier 2: courier2@azliner.info');
   console.log('\n💡 Note: Use OAuth providers for authentication / Qeyd: Autentifikasiya üçün OAuth provider-ları istifadə edin');
 }
 

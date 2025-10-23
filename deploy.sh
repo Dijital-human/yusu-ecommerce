@@ -29,6 +29,6 @@ sudo systemctl reload nginx
 # 6. Status yoxla / Check status
 echo "✅ Deployment tamamlandı / Deployment completed"
 echo "🌐 Sayt yoxlanır / Checking website..."
-curl -I https://yusu.com
+curl -I https://azliner.info
 
 echo "🎉 Deployment uğurlu / Deployment successful!"

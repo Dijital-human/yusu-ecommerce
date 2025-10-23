@@ -282,6 +282,6 @@ async headers() {
 For deployment support, contact our team:
 Deploy dəstəyi üçün komandamızla əlaqə saxlayın:
 
-- **Email**: dev@yusu.com
-- **Documentation**: https://docs.yusu.com
+- **Email**: dev@azliner.info
+- **Documentation**: https://docs.azliner.info
 - **GitHub Issues**: https://github.com/yusu-ecommerce/issues

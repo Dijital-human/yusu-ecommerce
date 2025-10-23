@@ -62,11 +62,11 @@ export function LoginForm({ onSubmit: externalOnSubmit, isLoading: externalIsLoa
       } else {
         // Direct redirect based on email / Email-ə görə birbaşa yönləndir
         const email = data.email;
-        if (email === "admin@yusu.com") {
+        if (email === "admin@azliner.info") {
           router.push("/admin/dashboard");
-        } else if (email === "seller1@yusu.com" || email === "seller2@yusu.com") {
+        } else if (email === "seller1@azliner.info" || email === "seller2@azliner.info") {
           router.push("/seller/dashboard");
-        } else if (email === "courier1@yusu.com" || email === "courier2@yusu.com") {
+        } else if (email === "courier1@azliner.info" || email === "courier2@azliner.info") {
           router.push("/courier");
         } else {
           router.push("/");

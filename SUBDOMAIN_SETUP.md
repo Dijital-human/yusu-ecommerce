@@ -10,10 +10,10 @@ This document explains the subdomain architecture and configuration of the Yusu 
 
 ### Subdomain Strukturu / Subdomain Structure
 ```
-yusu.com              → Müştəri platforması / Customer platform (Port 3000)
-admin.yusu.com        → Admin paneli / Admin panel (Port 3001)
-seller.yusu.com       → Seller paneli / Seller panel (Port 3002)
-courier.yusu.com      → Courier paneli / Courier panel (Port 3003)
+azliner.info              → Müştəri platforması / Customer platform (Port 3000)
+admin.azliner.info        → Admin paneli / Admin panel (Port 3001)
+seller.azliner.info       → Seller paneli / Seller panel (Port 3002)
+courier.azliner.info      → Courier paneli / Courier panel (Port 3003)
 ```
 
 ### Proyekt Strukturu / Project Structure
@@ -111,10 +111,10 @@ sudo nginx -s reload
 sudo nano /etc/hosts
 
 # Aşağıdakı sətirləri əlavə edin / Add the following lines:
-127.0.0.1 yusu.com
-127.0.0.1 admin.yusu.com
-127.0.0.1 seller.yusu.com
-127.0.0.1 courier.yusu.com
+127.0.0.1 azliner.info
+127.0.0.1 admin.azliner.info
+127.0.0.1 seller.azliner.info
+127.0.0.1 courier.azliner.info
 ```
 
 ## 🧪 Test Etmə / Testing
@@ -137,10 +137,10 @@ curl http://localhost:3003  # Courier paneli / Courier panel
 ### Subdomain Test / Subdomain Test
 ```bash
 # Subdomain-ləri test et / Test subdomains
-curl http://yusu.com
-curl http://admin.yusu.com
-curl http://seller.yusu.com
-curl http://courier.yusu.com
+curl http://azliner.info
+curl http://admin.azliner.info
+curl http://seller.azliner.info
+curl http://courier.azliner.info
 ```
 
 ## 🔧 Konfiqurasiya / Configuration
@@ -238,9 +238,9 @@ docker-compose restart
 - [Next.js Deployment](https://nextjs.org/docs/deployment)
 
 ### Dəstək / Support
-- **Email:** support@yusu.com
-- **Documentation:** https://docs.yusu.com
-- **Issues:** https://github.com/yusu-ecommerce/issues
+- **Email:** support@azliner.info
+- **Documentation:** https://docs.azliner.info
+- **Issues:** https://github.com/azliner-ecommerce/issues
 
 ---
 

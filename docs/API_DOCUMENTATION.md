@@ -236,6 +236,6 @@ curl -X POST "http://localhost:3000/api/cart" \
 For API support, please contact our development team.
 API dəstəyi üçün inkişaf komandamızla əlaqə saxlayın.
 
-- **Email**: support@yusu.com
-- **Documentation**: https://docs.yusu.com
+- **Email**: support@azliner.info
+- **Documentation**: https://docs.azliner.info
 - **GitHub**: https://github.com/yusu-ecommerce

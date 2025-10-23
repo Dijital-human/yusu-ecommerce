@@ -254,7 +254,7 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 ### Getting Help / Kömək Almaq
 
 1. **Support Channels / Dəstək Kanalları:**
-   - Email: support@yusu.com
+   - Email: support@azliner.info
    - Live Chat: Available on website / Saytda mövcud
    - Help Center: /help
 
@@ -265,9 +265,9 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 
 ## Contact Information / Əlaqə Məlumatları
 
-- **Website**: https://yusu.com
-- **Email**: info@yusu.com
-- **Support**: support@yusu.com
+- **Website**: https://azliner.info
+- **Email**: info@azliner.info
+- **Support**: support@azliner.info
 - **Phone**: +994 12 345 67 89
 
 ---

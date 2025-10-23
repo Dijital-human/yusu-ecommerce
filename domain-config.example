@@ -3,10 +3,10 @@
 # Copy this file to .env.local and change the values
 
 # Current Domain / Hazırkı Domain
-NEXT_PUBLIC_DOMAIN=yusu.com
-NEXT_PUBLIC_ADMIN_DOMAIN=admin.yusu.com
-NEXT_PUBLIC_SELLER_DOMAIN=seller.yusu.com
-NEXT_PUBLIC_COURIER_DOMAIN=courier.yusu.com
+NEXT_PUBLIC_DOMAIN=azliner.info
+NEXT_PUBLIC_ADMIN_DOMAIN=admin.azliner.info
+NEXT_PUBLIC_SELLER_DOMAIN=seller.azliner.info
+NEXT_PUBLIC_COURIER_DOMAIN=courier.azliner.info
 
 # Future Domain (when you change) / Gələcək Domain (dəyişdirdikdə)
 # NEXT_PUBLIC_DOMAIN=newdomain.com
@@ -16,5 +16,5 @@ NEXT_PUBLIC_COURIER_DOMAIN=courier.yusu.com
 
 # SSL Configuration / SSL Konfiqurasiyası
 NEXT_PUBLIC_USE_HTTPS=true
-NEXT_PUBLIC_SSL_CERT_PATH=/etc/letsencrypt/live/yusu.com/fullchain.pem
-NEXT_PUBLIC_SSL_KEY_PATH=/etc/letsencrypt/live/yusu.com/privkey.pem
+NEXT_PUBLIC_SSL_CERT_PATH=/etc/letsencrypt/live/azliner.info/fullchain.pem
+NEXT_PUBLIC_SSL_KEY_PATH=/etc/letsencrypt/live/azliner.info/privkey.pem

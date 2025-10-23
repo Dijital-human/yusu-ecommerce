@@ -240,11 +240,11 @@ export const authOptions: NextAuthOptions = {
           // Determine role based on email / Email-ə görə rol təyin et
           let userRole = "CUSTOMER"; // Default role / Varsayılan rol
           
-          if (user.email === "admin@yusu.com") {
+          if (user.email === "admin@azliner.info") {
             userRole = "ADMIN";
-          } else if (user.email === "seller1@yusu.com" || user.email === "seller2@yusu.com") {
+          } else if (user.email === "seller1@azliner.info" || user.email === "seller2@azliner.info") {
             userRole = "SELLER";
-          } else if (user.email === "courier1@yusu.com" || user.email === "courier2@yusu.com") {
+          } else if (user.email === "courier1@azliner.info" || user.email === "courier2@azliner.info") {
             userRole = "COURIER";
           } else if (user.email?.includes("test-seller")) {
             // Test üçün: email-də "test-seller" varsa SELLER rol ver

@@ -145,7 +145,7 @@ export const getEmailConfig = () => {
     port: parseInt(env.EMAIL_SERVER_PORT),
     user: env.EMAIL_SERVER_USER,
     password: env.EMAIL_SERVER_PASSWORD,
-    from: env.EMAIL_FROM || "noreply@yusu.com",
+    from: env.EMAIL_FROM || "noreply@azliner.info",
   };
 };
 

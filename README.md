@@ -223,10 +223,10 @@ npm run dev
 - **Kuryer paneli / Courier panel:** http://localhost:3003
 
 ### Production / Canlı
-- **Ana sayt / Main site:** https://yusu.com
-- **Admin paneli / Admin panel:** https://admin.yusu.com
-- **Satıcı paneli / Seller panel:** https://seller.yusu.com
-- **Kuryer paneli / Courier panel:** https://courier.yusu.com
+- **Ana sayt / Main site:** https://azliner.info
+- **Admin paneli / Admin panel:** https://admin.azliner.info
+- **Satıcı paneli / Seller panel:** https://seller.azliner.info
+- **Kuryer paneli / Courier panel:** https://courier.azliner.info
 
 ## 🔧 Deployment / Yükləmə
 
@@ -370,8 +370,8 @@ Bu proyekt MIT lisenziyası altında paylaşılır / This project is licensed un
 ## 📞 Əlaqə / Contact
 
 <<<<<<< HEAD
-- **Email:** info@yusu.com
-- **Website:** https://yusu.com
+- **Email:** info@azliner.info
+- **Website:** https://azliner.info
 - **GitHub:** https://github.com/Dijital-human/yusu-ecommerce
 
 ---
@@ -383,9 +383,9 @@ Bu proyekt MIT lisenziyası altında paylaşılır / This project is licensed un
 *Deployment test - Vercel integration*
 *Force deployment - Environment variables updated*
 =======
-- **Email:** customer@yusu.com
-- **Website:** https://yusu.com
-- **Support:** support@yusu.com
+- **Email:** customer@azliner.info
+- **Website:** https://azliner.info
+- **Support:** support@azliner.info
 
 ---
 
