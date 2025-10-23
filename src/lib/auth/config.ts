@@ -55,6 +55,7 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
+          role: "CUSTOMER", // Default role for OAuth users
         };
       }
     }),
@@ -63,6 +64,16 @@ export const authOptions: NextAuthOptions = {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+      profile(profile) {
+        console.log("Facebook profile received:", profile);
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture?.data?.url,
+          role: "CUSTOMER", // Default role for OAuth users
+        };
+      }
     }),
     
     // Apple Provider / Apple Provayderi
