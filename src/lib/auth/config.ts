@@ -134,8 +134,11 @@ export const authOptions: NextAuthOptions = {
         console.log("JWT callback - initial sign in, user role:", user.role);
         return {
           ...token,
-          role: user.role,
           id: user.id,
+          name: user.name,
+          email: user.email,
+          picture: user.image,
+          role: user.role,
         };
       }
       
@@ -155,8 +158,12 @@ export const authOptions: NextAuthOptions = {
           session.user = {} as any;
         }
         
+        // Update session with token data / Token məlumatları ilə session-u yenilə
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+        session.user.image = token.picture as string;
         
         console.log("Session callback - updated session.user:", session.user);
       }
@@ -249,7 +256,7 @@ export const authOptions: NextAuthOptions = {
             // Create new user for OAuth / OAuth üçün yeni istifadəçi yarat
             console.log("Creating new user for OAuth");
             try {
-              await prisma.user.create({
+              const newUser = await prisma.user.create({
                 data: {
                   email: user.email!,
                   name: user.name,
@@ -258,7 +265,11 @@ export const authOptions: NextAuthOptions = {
                   isActive: true,
                 },
               });
-              console.log("New user created successfully");
+              console.log("New user created successfully:", newUser);
+              
+              // Update user object with database data / User obyektini veritabanı məlumatları ilə yenilə
+              user.id = newUser.id;
+              user.role = newUser.role;
             } catch (createError) {
               console.error("User creation error:", createError);
               return false;
@@ -274,6 +285,10 @@ export const authOptions: NextAuthOptions = {
                 });
                 console.log("User role updated");
               }
+              
+              // Update user object with database data / User obyektini veritabanı məlumatları ilə yenilə
+              user.id = existingUser.id;
+              user.role = existingUser.role;
             } catch (updateError) {
               console.error("User update error:", updateError);
               return false;
