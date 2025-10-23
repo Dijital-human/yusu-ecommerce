@@ -14,7 +14,6 @@ import {
   Cookie, 
   Settings, 
   Shield, 
-  Eye, 
   Target, 
   CheckCircle,
   XCircle
