@@ -8,6 +8,7 @@
 
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { 
   HelpCircle, 
   ShoppingCart, 
