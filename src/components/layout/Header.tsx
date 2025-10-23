@@ -264,9 +264,12 @@ export function Header() {
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 w-80">
                 <Search className="h-4 w-4 text-gray-400 mr-2" />
                      <input
+                       id="desktop-search"
+                       name="search"
                        type="text"
-                  placeholder="Search for products..."
-                  className="flex-1 bg-transparent border-none outline-none text-sm"
+                       placeholder="Search for products..."
+                       className="flex-1 bg-transparent border-none outline-none text-sm"
+                       autoComplete="off"
                      />
                 <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors duration-200">
                   Search
@@ -405,9 +408,12 @@ export function Header() {
                 <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
                   <Search className="h-4 w-4 text-gray-400 mr-2" />
                   <input
+                    id="mobile-search"
+                    name="search"
                     type="text"
                     placeholder="Search for products..."
                     className="flex-1 bg-transparent border-none outline-none text-sm"
+                    autoComplete="off"
                   />
                   <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors duration-200">
                     Search
