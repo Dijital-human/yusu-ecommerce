@@ -27,6 +27,9 @@ const envSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  PAYPAL_CLIENT_ID: z.string().optional(),
+  PAYPAL_CLIENT_SECRET: z.string().optional(),
+  PAYPAL_MODE: z.enum(["sandbox", "live"]).optional(),
   
   // External APIs / Xarici API-lər
   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().optional(),
@@ -40,6 +43,15 @@ const envSchema = z.object({
   
   // Redis Configuration / Redis Konfiqurasiyası
   REDIS_URL: z.string().optional(),
+  
+  // CDN Configuration / CDN Konfiqurasiyası
+  CDN_URL: z.string().url().optional(),
+  CDN_ENABLED: z.string().optional(),
+  
+  // Search Engine Configuration / Axtarış Mühərriki Konfiqurasiyası
+  MEILISEARCH_HOST: z.string().url().optional(),
+  MEILISEARCH_API_KEY: z.string().optional(),
+  SEARCH_ENGINE_ENABLED: z.string().optional(),
   
   // Application Settings / Tətbiq Tənzimləri
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -63,7 +75,46 @@ const envSchema = z.object({
 export function validateEnv() {
   try {
     const env = envSchema.parse(process.env);
-    console.log("✅ Environment variables validated successfully / Mühit dəyişənləri uğurla doğrulandı");
+    
+    // Production environment validation / Production mühit doğrulaması
+    if (env.NODE_ENV === 'production') {
+      const requiredProductionVars = [
+        'DATABASE_URL',
+        'NEXTAUTH_URL',
+        'NEXTAUTH_SECRET',
+      ];
+      
+      const missingVars: string[] = [];
+      requiredProductionVars.forEach(varName => {
+        if (!process.env[varName] || process.env[varName] === '') {
+          missingVars.push(varName);
+        }
+      });
+      
+      if (missingVars.length > 0) {
+        console.error("❌ Production environment validation failed / Production mühit doğrulaması uğursuz oldu:");
+        console.error("Missing required variables / Tələb olunan dəyişənlər yoxdur:");
+        missingVars.forEach(varName => {
+          console.error(`  - ${varName}`);
+        });
+        throw new Error(`Missing required production environment variables / Tələb olunan production mühit dəyişənləri yoxdur: ${missingVars.join(', ')}`);
+      }
+      
+      // Validate NEXTAUTH_SECRET length / NEXTAUTH_SECRET uzunluğunu yoxla
+      if (env.NEXTAUTH_SECRET.length < 32) {
+        throw new Error("NEXTAUTH_SECRET must be at least 32 characters in production / Production-da NEXTAUTH_SECRET ən azı 32 simvol olmalıdır");
+      }
+      
+      // Validate NEXTAUTH_URL format / NEXTAUTH_URL formatını yoxla
+      if (!env.NEXTAUTH_URL.startsWith('https://')) {
+        throw new Error("NEXTAUTH_URL must use HTTPS in production / Production-da NEXTAUTH_URL HTTPS istifadə etməlidir");
+      }
+      
+      console.log("✅ Production environment variables validated successfully / Production mühit dəyişənləri uğurla doğrulandı");
+    } else {
+      console.log("✅ Environment variables validated successfully / Mühit dəyişənləri uğurla doğrulandı");
+    }
+    
     return env;
   } catch (error: any) {
     console.error("❌ Environment validation failed / Mühit doğrulaması uğursuz oldu:");
@@ -74,7 +125,13 @@ export function validateEnv() {
     } else {
       console.error(`  - ${error?.message || error}`);
     }
-    process.exit(1);
+    
+    // Only exit in production / Yalnız production-da çıx
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
+    
+    throw error;
   }
 }
 
@@ -198,6 +255,31 @@ export const getRedisConfig = () => {
   
   return {
     url: env.REDIS_URL,
+  };
+};
+
+// CDN configuration helper / CDN konfiqurasiya köməkçisi
+export const getCDNConfig = () => {
+  if (!env.CDN_URL || env.CDN_ENABLED !== 'true') {
+    return null;
+  }
+  
+  return {
+    url: env.CDN_URL,
+    enabled: true,
+  };
+};
+
+// Search engine configuration helper / Axtarış mühərriki konfiqurasiya köməkçisi
+export const getSearchEngineConfig = () => {
+  if (!env.MEILISEARCH_HOST || env.SEARCH_ENGINE_ENABLED !== 'true') {
+    return null;
+  }
+  
+  return {
+    host: env.MEILISEARCH_HOST,
+    apiKey: env.MEILISEARCH_API_KEY,
+    enabled: true,
   };
 };
 

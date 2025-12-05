@@ -1,0 +1,25 @@
+*** Begin Patch
+*** Update File: .gitignore
+@@
+ client_secret_*.json
+ 
++# Build / cache / backups additions
++# Ignore compiled SWC cache
++.swc/
++# Sass cache
++.sass-cache/
++
++# Environment backups and archives
++.env.*.bak
++.env-backups/
++
++# Cleanup archive (keep README but ignore archived contents)
++.cleanup/archive/
++
++# Uploaded media (should be stored in S3 / external storage in production)
++public/uploads/
++
++# Server build artifacts
++server/
++
+*** End Patch

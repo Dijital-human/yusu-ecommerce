@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,7 @@ import { Label } from "@/components/ui/Label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Link } from "@/i18n/routing";
 
 interface LoginFormProps {
   onSubmit?: (data: { email: string; password: string }) => Promise<void>;
@@ -226,15 +228,16 @@ export function LoginForm({ onSubmit: externalOnSubmit, isLoading: externalIsLoa
 
         <div className="text-center text-sm">
           <span className="text-muted-foreground">
-            Don't have an account? / Hesabınız yoxdur?{" "}
+            {t('dontHaveAccount')}{" "}
           </span>
-          <Button
-            variant="link"
-            className="p-0 h-auto font-normal"
-            onClick={() => router.push("/auth/signup")}
-          >
-            Sign up / Qeydiyyat
-          </Button>
+          <Link href="/auth/signup">
+            <Button
+              variant="link"
+              className="p-0 h-auto font-normal"
+            >
+              {t('signUp')}
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

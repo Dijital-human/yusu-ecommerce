@@ -7,7 +7,6 @@
 "use client";
 
 import Link from "next/link";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { 
@@ -20,7 +19,7 @@ import {
 
 export default function NotFound() {
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50">
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Card className="w-full max-w-lg">
           <CardContent className="p-8 text-center">
@@ -89,6 +88,6 @@ export default function NotFound() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </div>
   );
 }

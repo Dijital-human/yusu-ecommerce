@@ -7,27 +7,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
-import { prisma } from "@/lib/db";
-import Stripe from "stripe";
-
-// Stripe configuration - only initialize if API key is available
-// Stripe konfiqurasiyası - yalnız API açarı mövcud olduqda başlat
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-09-30.clover",
-    })
-  : null;
+import { logger } from "@/lib/utils/logger";
+import { createPayment, paymentProviderManager } from "@/lib/payments/payment-provider";
+import { getOrderWithBasic } from "@/lib/db/queries/order-queries";
+import { handleApiError } from "@/lib/api/error-handler";
+import { trackAPITransaction, startAPMTransaction, endAPMTransaction, setAPMUser, trackAPMError } from "@/lib/monitoring/apm";
+import { triggerAPIErrorAlert, triggerAPIResponseTimeAlert, triggerPaymentErrorAlert } from "@/lib/monitoring/alert-helpers";
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  let orderId: string | undefined;
+  let userId: string | undefined;
+  let transactionId: string | undefined;
+  let paymentMethod: string = "stripe";
+  
   try {
-    // Check if Stripe is configured / Stripe konfiqurasiyasını yoxla
-    if (!stripe) {
-      return NextResponse.json(
-        { success: false, error: "Payment system not configured / Ödəniş sistemi konfiqurasiya edilməyib" },
-        { status: 503 }
-      );
-    }
-
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {
@@ -37,8 +31,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    userId = session.user.id;
+    
+    // Set APM user context / APM istifadəçi konteksti təyin et
+    setAPMUser(userId);
+    
+    // Start APM transaction / APM transaction başlat
+    transactionId = startAPMTransaction('payment.create-intent', {
+      userId,
+    });
     const body = await request.json();
-    const { orderId, amount, currency = "usd" } = body;
+    const { orderId: bodyOrderId, amount, currency = "usd", paymentMethod: bodyPaymentMethod = "stripe" } = body;
+    orderId = bodyOrderId;
+    paymentMethod = bodyPaymentMethod;
 
     // Validate input / Girişi yoxla
     if (!orderId || !amount) {
@@ -48,20 +53,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify order exists and belongs to user / Sifarişin mövcud olduğunu və istifadəçiyə aid olduğunu yoxla
-    const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-        customerId: session.user.id,
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
+    // Verify order exists and belongs to user using query helper / Query helper istifadə edərək sifarişin mövcud olduğunu və istifadəçiyə aid olduğunu yoxla
+    const order = await getOrderWithBasic(orderId);
 
     if (!order) {
       return NextResponse.json(
@@ -70,49 +63,151 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify order belongs to user / Sifarişin istifadəçiyə aid olduğunu yoxla
+    if (order.customerId !== userId) {
+      return NextResponse.json(
+        { success: false, error: "Order not found / Sifariş tapılmadı" },
+        { status: 404 }
+      );
+    }
+
     // Verify amount matches order total / Məbləğin sifariş cəminə uyğun olduğunu yoxla
-    if (amount !== order.totalAmount) {
+    if (Number(amount) !== Number(order.totalAmount)) {
       return NextResponse.json(
         { success: false, error: "Amount mismatch / Məbləğ uyğunsuzluğu" },
         { status: 400 }
       );
     }
 
-    // Create payment intent / Ödəniş niyyəti yarat
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents / Sentə çevir
-      currency: currency.toLowerCase(),
+    // Check if payment method is available / Ödəniş metodunun mövcud olub-olmadığını yoxla
+    if (!paymentProviderManager.isMethodAvailable(paymentMethod as any)) {
+      return NextResponse.json(
+        { success: false, error: `Payment method ${paymentMethod} is not available / Ödəniş metodu ${paymentMethod} mövcud deyil` },
+        { status: 400 }
+      );
+    }
+
+    // Create payment using provider / Provider istifadə edərək ödəniş yarat
+    const paymentResult = await createPayment({
+      orderId,
+      amount: Number(amount),
+      currency,
+      userId,
+      paymentMethod: paymentMethod as any,
       metadata: {
-        orderId: orderId,
-        userId: session.user.id,
-      },
-      description: `Order #${orderId.slice(-8).toUpperCase()}`,
-      automatic_payment_methods: {
-        enabled: true,
+        orderId,
+        userId,
       },
     });
 
-    // Update order with payment intent ID / Sifarişi ödəniş niyyəti ID ilə yenilə
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        paymentIntentId: paymentIntent.id,
-        status: "PENDING_PAYMENT",
-      },
-    });
+    if (!paymentResult.success) {
+      return NextResponse.json(
+        { success: false, error: paymentResult.error || "Failed to create payment / Ödəniş yaratmaq uğursuz" },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json({
+    // Update order with payment information using order service / Order service istifadə edərək sifarişi ödəniş məlumatları ilə yenilə
+    const { updateOrderPaymentInfo } = await import("@/services/order.service");
+    try {
+      await updateOrderPaymentInfo(orderId, {
+      paymentIntentId: paymentResult.paymentId,
+      status: paymentMethod === 'cash_on_delivery' || paymentMethod === 'bank_transfer' 
+        ? "CONFIRMED" 
+        : "PENDING_PAYMENT",
+      paymentStatus: paymentMethod === 'cash_on_delivery' || paymentMethod === 'bank_transfer'
+        ? "PENDING"
+        : "PENDING",
+      });
+    } catch (updateError) {
+      // Log error but don't fail the payment intent creation / Xətanı qeyd et amma ödəniş niyyəti yaratmanı uğursuz etmə
+      logger.error("Failed to update order payment info", updateError, { orderId });
+      // Payment webhook will handle the update / Payment webhook yeniləməni idarə edəcək
+    }
+
+    const duration = Date.now() - startTime;
+    const response = NextResponse.json({
       success: true,
       data: {
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
+        clientSecret: paymentResult.clientSecret,
+        paymentId: paymentResult.paymentId,
+        redirectUrl: paymentResult.redirectUrl,
+        paymentMethod,
+        status: paymentResult.status,
+        metadata: paymentResult.metadata,
       },
     });
+    
+    // Track APM transaction / APM transaction izlə
+    trackAPITransaction('/api/payment/create-intent', 'POST', duration, response.status, {
+      orderId,
+      paymentMethod,
+      amount,
+      currency,
+    });
+    
+    // End APM transaction / APM transaction bitir
+    if (transactionId) {
+      endAPMTransaction(transactionId, 'success');
+    }
+    
+    // Check for high response time / Yüksək cavab vaxtını yoxla
+    await triggerAPIResponseTimeAlert('/api/payment/create-intent', duration, 3000);
+    
+    return response;
   } catch (error) {
-    console.error("Error creating payment intent:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to create payment intent / Ödəniş niyyəti yaratmaq uğursuz" },
-      { status: 500 }
-    );
+    const duration = Date.now() - startTime;
+    const currentUserId = userId; // Capture userId from outer scope / userId-ni xarici scope-dan tut
+    
+    logger.error("Error creating payment intent", error, { orderId, userId: currentUserId });
+    
+    // Track APM error / APM xətasını izlə
+    trackAPMError(error instanceof Error ? error : new Error(String(error)), {
+      endpoint: '/api/payment/create-intent',
+      method: 'POST',
+      duration,
+      orderId,
+      userId: currentUserId,
+    });
+    
+    // End APM transaction with error / APM transaction-i xəta ilə bitir
+    if (transactionId) {
+      endAPMTransaction(transactionId, 'error');
+    }
+    
+    // Trigger alert for payment error / Ödəniş xətası üçün alert tetiklə
+    const alertMetadata: Record<string, any> = {
+      endpoint: '/api/payment/create-intent',
+    };
+    if (currentUserId) {
+      alertMetadata.userId = currentUserId;
+    }
+    
+    if (orderId) {
+      // Get payment provider name / Ödəniş provider adını al
+      let providerName = 'unknown';
+      try {
+        const provider = paymentProviderManager.getProvider(paymentMethod as any);
+        if (provider) {
+          providerName = provider.getName();
+        } else {
+          providerName = paymentMethod || 'unknown';
+        }
+      } catch {
+        providerName = paymentMethod || 'unknown';
+      }
+      
+      await triggerPaymentErrorAlert(
+        orderId,
+        providerName,
+        error instanceof Error ? error : new Error(String(error)),
+        alertMetadata
+      );
+    } else {
+      alertMetadata.operation = 'create_payment_intent';
+      await triggerAPIErrorAlert('/api/payment/create-intent', 500, error instanceof Error ? error : new Error(String(error)), alertMetadata);
+    }
+    
+    return handleApiError(error, "create payment intent");
   }
 }

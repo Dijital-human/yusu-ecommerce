@@ -1,0 +1,183 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Yusu E-commerce Platform Dashboard",
+    "tags": ["yusu", "ecommerce", "platform"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"yusu-main\"}",
+            "legendFormat": "Main App Status"
+          },
+          {
+            "expr": "up{job=\"yusu-admin\"}",
+            "legendFormat": "Admin App Status"
+          },
+          {
+            "expr": "up{job=\"yusu-seller\"}",
+            "legendFormat": "Seller App Status"
+          },
+          {
+            "expr": "up{job=\"yusu-courier\"}",
+            "legendFormat": "Courier App Status"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"yusu-main\"}[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"yusu-main\"}[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 3,
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-main\"}[5m])",
+            "legendFormat": "Main App"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-admin\"}[5m])",
+            "legendFormat": "Admin App"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-seller\"}[5m])",
+            "legendFormat": "Seller App"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-courier\"}[5m])",
+            "legendFormat": "Courier App"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      },
+      {
+        "id": 4,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-main\",status=~\"5..\"}[5m])",
+            "legendFormat": "5xx Errors"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"yusu-main\",status=~\"4..\"}[5m])",
+            "legendFormat": "4xx Errors"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        }
+      },
+      {
+        "id": 5,
+        "title": "Database Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(postgresql_connections_active[5m])",
+            "legendFormat": "Active Connections"
+          },
+          {
+            "expr": "rate(postgresql_queries_total[5m])",
+            "legendFormat": "Queries/sec"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        }
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes{job=\"yusu-main\"}",
+            "legendFormat": "Main App Memory"
+          },
+          {
+            "expr": "process_resident_memory_bytes{job=\"yusu-admin\"}",
+            "legendFormat": "Admin App Memory"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 24
+        }
+      },
+      {
+        "id": 7,
+        "title": "CPU Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"yusu-main\"}[5m]) * 100",
+            "legendFormat": "Main App CPU"
+          },
+          {
+            "expr": "rate(process_cpu_seconds_total{job=\"yusu-admin\"}[5m]) * 100",
+            "legendFormat": "Admin App CPU"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 24
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 1,
+    "links": []
+  }
+}
+

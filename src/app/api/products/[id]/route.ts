@@ -4,8 +4,11 @@
  * Bu route müəyyən məhsul haqqında ətraflı məlumat almağı idarə edir
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { NextRequest } from "next/server";
+import { successResponse } from "@/lib/api/response";
+import { handleApiError } from "@/lib/api/error-handler";
+import { validateProductId } from "@/lib/api/validators";
+import { getProductById } from "@/lib/db/queries/product-queries";
 
 export async function GET(
   request: NextRequest,
@@ -15,81 +18,24 @@ export async function GET(
     const resolvedParams = await params;
     const productId = resolvedParams.id;
 
-    // Fetch product with related data / Əlaqəli məlumatlarla məhsulu al
-    const product = await prisma.product.findUnique({
-      where: {
-        id: productId,
-        isActive: true,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        reviews: {
-          select: {
-            id: true,
-            rating: true,
-            comment: true,
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-      },
-    });
-
-    if (!product) {
-      return NextResponse.json(
-        { error: "Product not found / Məhsul tapılmadı" },
-        { status: 404 }
-      );
+    // Validate product ID using helper / Helper ilə məhsul ID-ni yoxla
+    const validatedProductId = validateProductId(productId);
+    if (validatedProductId instanceof Response) {
+      return validatedProductId;
     }
 
-    // Calculate average rating / Orta reytinqi hesabla
-    const averageRating = product.reviews.length > 0
-      ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
-      : 0;
+    // Fetch product using query helper / Query helper ilə məhsulu al
+    const result = await getProductById(validatedProductId, true);
+    if (result instanceof Response) {
+      return result;
+    }
 
-    // Format response / Cavabı formatla
-    const response = {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: Number(product.price),
-      images: product.images || [],
-      category: product.category,
-      seller: product.seller,
-      stock: product.stock,
-      rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
-      reviewCount: product.reviews.length,
-      isActive: product.isActive,
-      createdAt: product.createdAt.toISOString(),
-      updatedAt: product.updatedAt.toISOString(),
-    };
+    const { product } = result;
 
-    return NextResponse.json(response);
+    // Product is already transformed by query helper / Məhsul artıq query helper tərəfindən transform edilib
+    // Return transformed product directly / Transform edilmiş məhsulu birbaşa qaytar
+    return successResponse(product);
   } catch (error) {
-    console.error("Error fetching product:", error);
-    return NextResponse.json(
-      { error: "Internal server error / Daxili server xətası" },
-      { status: 500 }
-    );
+    return handleApiError(error, "fetch product");
   }
 }

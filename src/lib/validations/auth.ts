@@ -64,6 +64,9 @@ export const forgotPasswordSchema = z.object({
 
 // Reset Password Form Validation / Şifrəni Sıfırlama Formu Yoxlaması
 export const resetPasswordSchema = z.object({
+  token: z
+    .string()
+    .min(1, "Reset token is required / Sıfırlama token-i tələb olunur"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters / Şifrə ən azı 8 simvol olmalıdır")

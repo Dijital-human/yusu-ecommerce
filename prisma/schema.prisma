@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // User Model / İstifadəçi Modeli
@@ -23,42 +23,134 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Admin specific fields / Admin xüsusi sahələri
-  adminRole     String?   // SUPER_ADMIN, SYSTEM_ADMIN, etc.
-  permissions   String?   // JSON string of custom permissions
-  notes         String?   // Admin notes about user
+  adminRole   String? // SUPER_ADMIN, SYSTEM_ADMIN, etc.
+  permissions String? // JSON string of custom permissions
+  notes       String? // Admin notes about user
 
   // User blocking fields / İstifadəçi bloklama sahələri
-  isBlocked       Boolean?
-  blockReason     String?
-  blockType       String?   // ACCOUNT, LOGIN, PURCHASE, SELL, DELIVER
-  blockSeverity   String?   // LOW, MEDIUM, HIGH, CRITICAL
-  blockedAt       DateTime?
-  blockedUntil    DateTime?
-  blockedBy       String?
-  unblockedAt     DateTime?
-  unblockedBy     String?
+  isBlocked     Boolean?
+  blockReason   String?
+  blockType     String? // ACCOUNT, LOGIN, PURCHASE, SELL, DELIVER
+  blockSeverity String? // LOW, MEDIUM, HIGH, CRITICAL
+  blockedAt     DateTime?
+  blockedUntil  DateTime?
+  blockedBy     String?
+  unblockedAt   DateTime?
+  unblockedBy   String?
+
+  // Password reset fields / Şifrə sıfırlama sahələri
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  passwordHash     String?
+
+  // Email verification fields / Email təsdiq sahələri
+  emailVerified         Boolean   @default(false)
+  emailVerificationToken String?
+  emailVerificationTokenExpiry DateTime?
+
+  // Approval fields for SELLER and COURIER roles / SELLER və COURIER rolları üçün təsdiq sahələri
+  isApproved Boolean   @default(false)
+  approvedAt DateTime?
+  approvedBy String? // Admin user ID who approved / Təsdiq edən admin istifadəçi ID-si
+
+  // Loyalty program fields / Sədaqət proqramı sahələri
+  birthday              DateTime? // User birthday / İstifadəçi doğum günü
+  lastBirthdayReward    DateTime? // Last time birthday reward was given / Son dəfə doğum günü mükafatı verildi
+  lastAnniversaryReward DateTime? // Last time anniversary reward was given / Son dəfə ildönümü mükafatı verildi
 
   // Relations / Əlaqələr
   accounts      Account[]
   sessions      Session[]
-  addresses     Address[]
-  cartItems     CartItem[]
-  orders        Order[]    @relation("CustomerOrders")
-  sellerOrders  Order[]    @relation("SellerOrders")
-  courierOrders Order[]    @relation("CourierOrders")
+  addresses           Address[]
+  savedPaymentMethods SavedPaymentMethod[]
+  cartItems           CartItem[]
+  orders        Order[]        @relation("CustomerOrders")
+  sellerOrders  Order[]        @relation("SellerOrders")
+  courierOrders Order[]        @relation("CourierOrders")
   products      Product[]
   courier       Courier?
   reviews       Review[]
   wishlistItems WishlistItem[]
 
   // Admin relations / Admin əlaqələri
-  blockedUsers     User[] @relation("UserBlocking")
-  blockedByUser    User?  @relation("UserBlocking", fields: [blockedBy], references: [id])
-  unblockedUsers   User[] @relation("UserUnblocking")
-  unblockedByUser  User?  @relation("UserUnblocking", fields: [unblockedBy], references: [id])
-  createdBackups   Backup[]
-  auditLogs        AuditLog[]
+  blockedUsers    User[]     @relation("UserBlocking")
+  blockedByUser   User?      @relation("UserBlocking", fields: [blockedBy], references: [id])
+  unblockedUsers  User[]     @relation("UserUnblocking")
+  unblockedByUser User?      @relation("UserUnblocking", fields: [unblockedBy], references: [id])
+  approvedUsers   User[]     @relation("UserApproval")
+  approvedByUser  User?      @relation("UserApproval", fields: [approvedBy], references: [id])
+  createdBackups  Backup[]
+  auditLogs       AuditLog[]
 
+  // Content Management relations / Məzmun İdarəetməsi əlaqələri
+  createdBanners          Banner[]          @relation("BannerCreator")
+  updatedBanners          Banner[]          @relation("BannerUpdater")
+  createdHomepageSections HomepageSection[] @relation("HomepageSectionCreator")
+  updatedHomepageSections HomepageSection[] @relation("HomepageSectionUpdater")
+  createdPages            Page[]            @relation("PageCreator")
+  updatedPages            Page[]            @relation("PageUpdater")
+  createdContentVersions  ContentVersion[]  @relation("ContentVersionCreator")
+
+  // Chat relations / Chat əlaqələri
+  customerChatRooms ChatRoom[]    @relation("CustomerChatRooms")
+  supportChatRooms  ChatRoom[]    @relation("SupportChatRooms")
+  chatMessages      ChatMessage[]
+  customerSellerChatRooms SellerChatRoom[] @relation("CustomerSellerChatRooms")
+  sellerChatRooms SellerChatRoom[] @relation("SellerChatRooms")
+  sellerChatMessages SellerChatMessage[]
+
+  // Q&A relations / Sual-Cavab əlaqələri
+  questions     ProductQuestion[] @relation("QuestionUser")
+  answers       ProductAnswer[]   @relation("AnswerUser")
+  questionVotes QuestionVote[]    @relation("QuestionVoteUser")
+  answerVotes   AnswerVote[]     @relation("AnswerVoteUser")
+  affiliatePrograms AffiliateProgram[] @relation("AffiliateProgramSeller")
+  affiliateLinks    AffiliateLink[] @relation("AffiliateLinkUser")
+  affiliateCommissions AffiliateCommission[] @relation("AffiliateCommissionUser")
+  affiliatePayouts  AffiliatePayout[] @relation("AffiliatePayoutUser")
+  referredBy        String? // Affiliate who referred this user / Bu istifadəçini tövsiyə edən affiliate
+  referredAffiliates User[] @relation("AffiliateReferral")
+  referrer          User?   @relation("AffiliateReferral", fields: [referredBy], references: [id], onDelete: SetNull)
+  reviewVotes       ReviewVote[]
+  userPoints       UserPoints?
+  pointsTransactions PointsTransaction[]
+  // productBundles   ProductBundle[] // Commented out - model not defined / Comment edildi - model təyin olunmayıb
+  purchasedGiftCards GiftCard[] @relation("GiftCardPurchaser")
+  redeemedGiftCards  GiftCard[] @relation("GiftCardRedeemer")
+  searchHistory     SearchHistory[]
+  recentlyViewed    RecentlyViewed[]
+  emailSubscriptions EmailSubscription[]
+  cookieConsent     CookieConsent?
+
+  // Blog relations / Blog əlaqələri
+  blogPosts   BlogPost[]   @relation("BlogPostAuthor")
+  blogComments BlogComment[] @relation("BlogCommentAuthor")
+
+  // Help Center relations / Yardım Mərkəzi əlaqələri
+  helpArticles      HelpArticle[]      @relation("HelpArticleAuthor")
+  helpArticleRatings HelpArticleRating[] @relation("HelpArticleRatingUser")
+  helpArticleFeedbacks HelpArticleFeedback[] @relation("HelpArticleFeedbackUser")
+  faqRatings        FAQRating[]        @relation("FAQRatingUser")
+  faqFeedbacks      FAQFeedback[]      @relation("FAQFeedbackUser")
+
+  // Email Campaign relations / Email Kampaniya əlaqələri
+  createdEmailCampaigns EmailCampaign[] @relation("EmailCampaignCreator")
+  emailCampaignRecipients EmailCampaignRecipient[] @relation("EmailCampaignRecipientUser")
+  createdEmailAutomations EmailAutomation[] @relation("EmailAutomationCreator")
+
+  // Push Notification relations / Push Bildiriş əlaqələri
+  pushNotificationSubscriptions PushNotificationSubscription[] @relation("PushNotificationSubscriptionUser")
+  createdPushNotifications PushNotification[] @relation("PushNotificationCreator")
+
+  // Marketing Automation relations / Marketinq Avtomatlaşdırması əlaqələri
+  createdMarketingAutomationWorkflows MarketingAutomationWorkflow[] @relation("MarketingAutomationWorkflowCreator")
+  marketingAutomationExecutions MarketingAutomationExecution[] @relation("MarketingAutomationExecutionUser")
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([role])
+  @@index([isActive])
+  @@index([isApproved])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -119,13 +211,18 @@ model Category {
   parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children Category[] @relation("CategoryHierarchy")
   products Product[]
+  sizeGuides SizeGuide[]
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([parentId])
+  @@index([isActive])
+  @@index([name])
   @@map("categories")
 }
 
 // Product Model / Məhsul Modeli
 model Product {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
   description   String
   price         Decimal
@@ -133,14 +230,14 @@ model Product {
   images        String
   categoryId    String
   sellerId      String
-  stock         Int      @default(0)
-  isActive      Boolean  @default(true)
-  isPublished   Boolean  @default(false)
-  isApproved    Boolean  @default(false)
+  stock         Int       @default(0)
+  isActive      Boolean   @default(true)
+  isPublished   Boolean   @default(false)
+  isApproved    Boolean   @default(false)
   publishedAt   DateTime?
   approvedAt    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations / Əlaqələr
   category      Category       @relation(fields: [categoryId], references: [id])
@@ -149,70 +246,183 @@ model Product {
   cartItems     CartItem[]
   reviews       Review[]
   wishlistItems WishlistItem[]
+  chatRooms     ChatRoom[]
+  sellerChatRooms SellerChatRoom[]
+  socialShares  SocialShare[]
+  videos        ProductVideo[]
+  media         ProductMedia[]
+  questions     ProductQuestion[]
+  affiliateLinks AffiliateLink[]
+  bundleItems   BundleItem[]
+  view360       Product360View?
+  variants      ProductVariant[]
+  model3D       Product3DModel?
+  warehouseStock WarehouseStock[]
+  stockTransfers StockTransfer[]
+  recentlyViewed RecentlyViewed[]
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([categoryId])
+  @@index([sellerId])
+  @@index([isActive])
+  @@index([isPublished])
+  @@index([isApproved])
+  @@index([stock])
+  @@index([price])
+  @@index([createdAt])
   @@map("products")
-}
-
-// Address Model / Ünvan Modeli
-model Address {
-  id        String   @id @default(cuid())
-  userId    String
-  street    String
-  city      String
-  state     String
-  zipCode   String
-  country   String
-  latitude  Float?
-  longitude Float?
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations / Əlaqələr
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
-
-  @@map("addresses")
 }
 
 // Order Model / Sifariş Modeli
 model Order {
-  id              String      @id @default(cuid())
-  customerId      String
-  sellerId        String
-  courierId       String?
-  status          OrderStatus @default(PENDING)
-  totalAmount     Decimal
-  shippingAddress String // JSON string of address
-  addressId       String? // Reference to Address model
-  paymentIntentId String? // Stripe payment intent ID
-  paymentStatus   String? // Payment status (PENDING, PAID, FAILED)
-  paidAt          DateTime? // Payment completion date
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  customerId    String
+  sellerId      String?
+  courierId     String?
+  status        OrderStatus @default(PENDING)
+  totalAmount   Decimal
+  shippingCost  Decimal     @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Relations / Əlaqələr
   customer User        @relation("CustomerOrders", fields: [customerId], references: [id])
-  seller   User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  seller   User?       @relation("SellerOrders", fields: [sellerId], references: [id])
   courier  User?       @relation("CourierOrders", fields: [courierId], references: [id])
-  address  Address?    @relation(fields: [addressId], references: [id])
-  items    OrderItem[]
+  items           OrderItem[]
+  returnRequests  ReturnRequest[]
+  refunds         Refund[]
+  pointsTransactions PointsTransaction[]
+  giftCardTransactions GiftCardTransaction[]
+  affiliateCommissions AffiliateCommission[]
+  partialPayments PartialPayment[]
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([customerId])
+  @@index([sellerId])
+  @@index([courierId])
+  @@index([status])
+  @@index([createdAt])
   @@map("orders")
+}
+
+// Warehouse Model / Anbar Modeli
+model Warehouse {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  country     String
+  capacity    Int?     // Maximum capacity / Maksimum tutum
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  stock       WarehouseStock[]
+  transfersFrom StockTransfer[] @relation("TransferFrom")
+  transfersTo   StockTransfer[] @relation("TransferTo")
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@index([city])
+  @@map("warehouses")
+}
+
+// Warehouse Stock Model / Anbar Stoku Modeli
+model WarehouseStock {
+  id          String   @id @default(cuid())
+  warehouseId String
+  productId   String
+  quantity    Int      @default(0)
+  reserved    Int      @default(0) // Reserved quantity / Rezerv edilmiş miqdar
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@unique([warehouseId, productId])
+  @@index([warehouseId])
+  @@index([productId])
+  @@map("warehouse_stock")
+}
+
+// Stock Transfer Model / Stok Transferi Modeli
+model StockTransfer {
+  id              String   @id @default(cuid())
+  fromWarehouseId String
+  toWarehouseId   String
+  productId       String
+  quantity        Int
+  status          String   @default("PENDING") // PENDING, APPROVED, IN_TRANSIT, COMPLETED, CANCELLED
+  transferDate    DateTime?
+  completedAt     DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  fromWarehouse   Warehouse @relation("TransferFrom", fields: [fromWarehouseId], references: [id])
+  toWarehouse     Warehouse @relation("TransferTo", fields: [toWarehouseId], references: [id])
+  product         Product   @relation(fields: [productId], references: [id])
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([fromWarehouseId])
+  @@index([toWarehouseId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("stock_transfers")
+}
+
+// Partial Payment Model / Qismən Ödəniş Modeli
+model PartialPayment {
+  id            String   @id @default(cuid())
+  orderId       String
+  amount        Decimal
+  paymentMethod String   // card, paypal, bank_transfer, etc.
+  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
+  transactionId String?  // External payment transaction ID
+  remainingAmount Decimal // Remaining balance after this payment
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("partial_payments")
 }
 
 // Order Item Model / Sifariş Elementi Modeli
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   orderId   String
   productId String
+  variantId String?  // Optional variant ID / İstəyə bağlı variant ID-si
   quantity  Int
   price     Decimal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations / Əlaqələr
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([orderId])
+  @@index([productId])
+  @@index([variantId])
   @@map("order_items")
 }
 
@@ -227,47 +437,91 @@ model CartItem {
 
   // Relations / Əlaqələr
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([productId])
   @@map("cart_items")
 }
 
-// Courier Model / Kuryer Modeli
-model Courier {
-  id               String      @id @default(cuid())
-  userId           String      @unique
-  vehicleType      VehicleType
-  licenseNumber    String
-  isAvailable      Boolean     @default(true)
-  currentLatitude  Float?
-  currentLongitude Float?
-  rating           Float       @default(0)
-  totalDeliveries  Int         @default(0)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+// Address Model / Ünvan Modeli
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  label       String?  // Address label (e.g., Home, Work, Office) / Ünvan etiketi (məsələn, Ev, İş, Ofis)
+  street      String
+  city        String
+  state       String
+  zipCode     String
+  country     String
+  phoneNumber String?  // Phone number for delivery / Çatdırılma üçün telefon nömrəsi
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations / Əlaqələr
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([isDefault])
+  @@map("addresses")
+}
+
+// Courier Model / Kuryer Modeli
+model Courier {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  vehicleType String?  // BIKE, MOTORCYCLE, CAR, VAN
+  licensePlate String?
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([isAvailable])
   @@map("couriers")
 }
 
 // Review Model / Rəy Modeli
 model Review {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String
+  productId       String
+  rating          Int
+  comment         String?
+  isVerifiedPurchase Boolean @default(false) // Verified purchase badge / Təsdiqlənmiş alış nişanı
+  isApproved      Boolean  @default(true) // Admin approval / Admin təsdiqi
+  isSpam          Boolean  @default(false) // Spam detection / Spam aşkarlama
+  reportCount     Int      @default(0) // Number of reports / Şikayətlərin sayı
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations / Əlaqələr
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // response ReviewResponse? // Commented out - model not defined / Comment edildi - model təyin olunmayıb
+  images   ReviewImage[]
+  video    ReviewVideo?
+  votes    ReviewVote[]
 
   @@unique([userId, productId])
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([productId])
+  @@index([rating])
+  @@index([createdAt])
+  @@index([isVerifiedPurchase])
+  @@index([isApproved])
+  @@index([isSpam])
   @@map("reviews")
 }
 
@@ -280,95 +534,1994 @@ model WishlistItem {
   updatedAt DateTime @updatedAt
 
   // Relations / Əlaqələr
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  note        WishlistNote?
+  priceAlerts PriceAlert[]
 
   @@unique([userId, productId])
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([productId])
   @@map("wishlist_items")
 }
 
-// Enums / Enum-lar
-enum UserRole {
-  CUSTOMER
-  SELLER
-  COURIER
-  ADMIN
+// Wishlist Note Model / İstək Siyahısı Qeydi Modeli
+// User notes for wishlist items / İstək siyahısı elementləri üçün istifadəçi qeydləri
+model WishlistNote {
+  id            String   @id @default(cuid())
+  wishlistItemId String  @unique
+  note          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+
+  @@map("wishlist_notes")
 }
 
-enum OrderStatus {
-  PENDING
-  PENDING_PAYMENT
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  PAYMENT_FAILED
+// Price Alert Model / Qiymət Xəbərdarlığı Modeli
+// Alerts when product price drops / Məhsul qiyməti düşəndə xəbərdarlıqlar
+model PriceAlert {
+  id            String   @id @default(cuid())
+  wishlistItemId String
+  targetPrice   Decimal
+  isActive      Boolean  @default(true)
+  notifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([wishlistItemId])
+  @@index([isActive])
+  @@index([targetPrice])
+  @@map("price_alerts")
 }
 
-enum VehicleType {
-  BIKE
-  MOTORCYCLE
-  CAR
-  VAN
+// Chat Room Model / Chat Otağı Modeli
+// Support chat rooms / Dəstək chat otaqları
+model ChatRoom {
+  id            String   @id @default(cuid())
+  customerId    String
+  supportId     String?  // Support staff user ID / Dəstək işçisi istifadəçi ID-si
+  status        String   @default("open") // open, closed / açıq, bağlı
+  lastMessageAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  customer User         @relation("CustomerChatRooms", fields: [customerId], references: [id], onDelete: Cascade)
+  support  User?        @relation("SupportChatRooms", fields: [supportId], references: [id], onDelete: SetNull)
+  product  Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  messages ChatMessage[]
+  productId String?
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([customerId])
+  @@index([supportId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("chat_rooms")
 }
 
-// Site Settings Model / Sayt Tənzimləri Modeli
-model SiteSetting {
+// Chat Message Model / Chat Mesajı Modeli
+// Messages in chat rooms / Chat otaqlarındakı mesajlar
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([roomId])
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+// Affiliate Program Model / Affiliate Proqram Modeli
+// Seller affiliate programs / Satıcı affiliate proqramları
+model AffiliateProgram {
+  id            String   @id @default(cuid())
+  sellerId      String
+  commissionRate Decimal @default(0.1) // 10% default / 10% default
+  isActive      Boolean  @default(true)
+  minPayout     Decimal  @default(50) // Minimum payout amount / Minimum ödəniş məbləği
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Enhancement fields / Təkmilləşdirmə sahələri
+  paymentSchedule     String?  // weekly, biweekly, monthly / həftəlik, iki həftəlik, aylıq
+  paymentDay          Int?     // Day of month/week for payment / Ödəniş üçün ay/həftənin günü
+  multiTierEnabled    Boolean  @default(false) // Multi-tier commission enabled / Çox səviyyəli komissiya aktivdir
+  tier2CommissionRate Decimal? // Second tier commission rate / İkinci səviyyə komissiya dərəcəsi
+  tier3CommissionRate Decimal? // Third tier commission rate / Üçüncü səviyyə komissiya dərəcəsi
+
+  // Relations / Əlaqələr
+  seller      User                @relation("AffiliateProgramSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  links       AffiliateLink[] @relation("AffiliateLinkProgram")
+  commissions AffiliateCommission[] @relation("AffiliateCommissionProgram")
+  payouts     AffiliatePayout[] @relation("AffiliatePayoutProgram")
+  promotionalMaterials AffiliatePromotionalMaterial[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([sellerId])
+  @@index([isActive])
+  @@map("affiliate_programs")
+}
+
+// Affiliate Link Model / Affiliate Link Modeli
+// Affiliate links for products / Məhsullar üçün affiliate linkləri
+model AffiliateLink {
   id          String   @id @default(cuid())
-  category    String   // theme, layout, navigation, banners, footer, header
-  key         String
-  value       String   // JSON string
-  description String?
+  affiliateId String   // User ID who is affiliate / Affiliate olan istifadəçi ID-si
+  programId   String?  // Optional program ID / Opsional proqram ID-si
+  productId   String?
+  linkCode    String   @unique // Unique link code / Unikal link kodu
+  customCode  String?  // Custom referral code / Xüsusi tövsiyə kodu
+  promoCode   String?  // Promo code associated with link / Link ilə əlaqəli promo kod
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@unique([category, key], name: "category_key")
-  @@map("site_settings")
+  // Relations / Əlaqələr
+  affiliate User             @relation("AffiliateLinkUser", fields: [affiliateId], references: [id], onDelete: Cascade)
+  product   Product?         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  program   AffiliateProgram? @relation("AffiliateLinkProgram", fields: [programId], references: [id], onDelete: SetNull)
+  commissions AffiliateCommission[] @relation("AffiliateCommissionLink")
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([affiliateId])
+  @@index([productId])
+  @@index([linkCode])
+  @@index([customCode])
+  @@index([promoCode])
+  @@map("affiliate_links")
+}
+
+// Affiliate Commission Model / Affiliate Komissiya Modeli
+// Commissions earned by affiliates / Affiliate-lər tərəfindən qazanılan komissiyalar
+model AffiliateCommission {
+  id              String   @id @default(cuid())
+  affiliateId     String   // User ID who is affiliate / Affiliate olan istifadəçi ID-si
+  linkId          String?
+  programId      String?
+  orderId         String
+  commissionAmount Decimal
+  tier            Int      @default(1) // Commission tier (1, 2, 3) / Komissiya səviyyəsi (1, 2, 3)
+  status          String   @default("pending") // pending, approved, paid, rejected / gözləyir, təsdiqlənib, ödənilib, rədd edilib
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  affiliate User            @relation("AffiliateCommissionUser", fields: [affiliateId], references: [id], onDelete: Cascade)
+  link      AffiliateLink?  @relation("AffiliateCommissionLink", fields: [linkId], references: [id], onDelete: SetNull)
+  program   AffiliateProgram? @relation("AffiliateCommissionProgram", fields: [programId], references: [id], onDelete: SetNull)
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([affiliateId])
+  @@index([linkId])
+  @@index([orderId])
+  @@index([status])
+  @@index([tier])
+  @@index([createdAt])
+  @@map("affiliate_commissions")
+}
+
+// Affiliate Payout Model / Affiliate Ödəniş Modeli
+// Payouts to affiliates / Affiliate-lərə ödənişlər
+model AffiliatePayout {
+  id          String   @id @default(cuid())
+  affiliateId String   // User ID who is affiliate / Affiliate olan istifadəçi ID-si
+  programId   String?
+  amount      Decimal
+  status      String   @default("pending") // pending, processing, paid, failed / gözləyir, emal olunur, ödənilib, uğursuz
+  scheduledFor DateTime? // Scheduled payout date / Planlaşdırılmış ödəniş tarixi
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  affiliate User @relation("AffiliatePayoutUser", fields: [affiliateId], references: [id], onDelete: Cascade)
+  program   AffiliateProgram? @relation("AffiliatePayoutProgram", fields: [programId], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([affiliateId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([createdAt])
+  @@map("affiliate_payouts")
+}
+
+// Affiliate Promotional Material Model / Affiliate Təşviq Materialı Modeli
+// Promotional materials for affiliates / Affiliate-lər üçün təşviq materialları
+model AffiliatePromotionalMaterial {
+  id          String   @id @default(cuid())
+  programId   String
+  type        String   // banner, link, email_template, social_post / banner, link, email_şablonu, sosial_post
+  title       String
+  description String?
+  content     String?  // HTML content or text / HTML məzmun və ya mətn
+  imageUrl    String?  // Banner image URL / Banner şəkil URL-i
+  linkUrl     String?  // Link URL / Link URL-i
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  program AffiliateProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([programId])
+  @@index([type])
+  @@index([isActive])
+  @@map("affiliate_promotional_materials")
+}
+
+// Loyalty Program Model / Sədaqət Proqramı Modeli
+// Loyalty program configuration / Sədaqət proqramı konfiqurasiyası
+model LoyaltyProgram {
+  id            String   @id @default(cuid())
+  name          String
+  pointsPerDollar Decimal @default(1) // Points per dollar spent / Xərclənən dollar başına xal
+  isActive      Boolean  @default(true)
+  // Enhancement fields / Təkmilləşdirmə sahələri
+  birthdayRewardPoints      Int?  // Points for birthday reward / Doğum günü mükafatı üçün xallar
+  anniversaryRewardPoints   Int?  // Points for anniversary reward / İldönümü mükafatı üçün xallar
+  referralRewardPoints      Int?  // Points for referral / Tövsiyə üçün xallar
+  reviewRewardPoints        Int?  // Points for review / Rəy üçün xallar
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  rewards PointsReward[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@map("loyalty_programs")
+}
+
+// User Points Model / İstifadəçi Xalları Modeli
+// User points balance / İstifadəçi xal balansı
+model UserPoints {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  points      Int      @default(0)
+  totalEarned Int      @default(0)
+  totalSpent  Int      @default(0)
+  expiryDate  DateTime? // Points expiration date / Xalların bitmə tarixi
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([expiryDate])
+  @@map("user_points")
+}
+
+// Points Transaction Model / Xal Əməliyyatı Modeli
+// Points earning and spending transactions / Xal qazanma və xərcləmə əməliyyatları
+model PointsTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  points      Int      // Positive for earning, negative for spending / Qazanma üçün müsbət, xərcləmə üçün mənfi
+  type        String   // purchase, review, referral, signup, redemption, expiry, birthday, anniversary, event / alış, rəy, tövsiyə, qeydiyyat, istifadə, bitmə, doğum günü, ildönümü, tədbir
+  description String?
+  orderId     String?
+  expiryDate  DateTime? // Transaction expiry date / Əməliyyatın bitmə tarixi
+  eventId     String?   // Special event ID for event bonuses / Tədbir bonusları üçün xüsusi tədbir ID-si
+  createdAt   DateTime @default(now())
+
+  // Relations / Əlaqələr
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([type])
+  @@index([orderId])
+  @@index([expiryDate])
+  @@index([createdAt])
+  @@map("points_transactions")
+}
+
+// Points Reward Model / Xal Mükafatı Modeli
+// Rewards that can be redeemed with points / Xallarla istifadə edilə bilən mükafatlar
+model PointsReward {
+  id            String   @id @default(cuid())
+  programId     String
+  pointsRequired Int
+  rewardType    String   // discount, free_shipping, gift_card / endirim, pulsuz çatdırılma, hədiyyə kartı
+  rewardValue   Decimal  // Discount amount, gift card value, etc. / Endirim məbləği, hədiyyə kartı dəyəri və s.
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  program LoyaltyProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([programId])
+  @@index([isActive])
+  @@index([pointsRequired])
+  @@map("points_rewards")
+}
+
+// Gift Card Template Model / Hədiyyə Kartı Şablonu Modeli
+// Admin-managed gift card templates / Admin tərəfindən idarə olunan hədiyyə kartı şablonları
+model GiftCardTemplate {
+  id          String   @id @default(cuid())
+  name        String   // Template name / Şablon adı
+  description String?  // Template description / Şablon təsviri
+  imageUrl    String?  // Template image URL / Şablon şəkil URL-i
+  design      Json?    // Template design JSON (colors, fonts, layout) / Şablon dizayn JSON (rənglər, şriftlər, düzüm)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  giftCards GiftCard[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@map("gift_card_templates")
+}
+
+// Gift Card Model / Hədiyyə Kartı Modeli
+// Gift cards for purchases / Alışlar üçün hədiyyə kartları
+model GiftCard {
+  id          String   @id @default(cuid())
+  code        String   @unique // YUSU-XXXX-XXXX-XXXX format / YUSU-XXXX-XXXX-XXXX formatı
+  amount      Decimal  @db.Decimal(10, 2) // Original amount / Orijinal məbləğ
+  balance     Decimal  @db.Decimal(10, 2) // Current balance / Cari balans
+  expiryDate  DateTime? // Expiry date / Bitmə tarixi
+  isActive    Boolean  @default(true)
+  purchasedBy String? // User who purchased the gift card / Hədiyyə kartını alan istifadəçi
+  redeemedBy  String? // User who redeemed the gift card / Hədiyyə kartını istifadə edən istifadəçi
+  redeemedAt  DateTime? // When gift card was redeemed / Hədiyyə kartı nə vaxt istifadə edildi
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Enhancement fields / Təkmilləşdirmə sahələri
+  templateId            String?  // Gift card template / Hədiyyə kartı şablonu
+  recipientName          String?  // Recipient name / Alıcı adı
+  recipientEmail         String?  // Recipient email / Alıcı email
+  customMessage          String?  // Custom message from purchaser / Alıcıdan xüsusi mesaj
+  scheduledDeliveryDate  DateTime? // Scheduled delivery date / Planlaşdırılmış çatdırılma tarixi
+  deliveredAt            DateTime? // When gift card was delivered / Hədiyyə kartı nə vaxt çatdırıldı
+  reminderSentAt         DateTime? // When expiration reminder was sent / Bitmə xatırlatması nə vaxt göndərildi
+
+  // Relations / Əlaqələr
+  purchaser User?                @relation("GiftCardPurchaser", fields: [purchasedBy], references: [id], onDelete: SetNull)
+  redeemer  User?                @relation("GiftCardRedeemer", fields: [redeemedBy], references: [id], onDelete: SetNull)
+  template  GiftCardTemplate?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  transactions GiftCardTransaction[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([code])
+  @@index([isActive])
+  @@index([expiryDate])
+  @@index([purchasedBy])
+  @@index([redeemedBy])
+  @@index([templateId])
+  @@index([scheduledDeliveryDate])
+  @@index([recipientEmail])
+  @@map("gift_cards")
+}
+
+// Gift Card Transaction Model / Hədiyyə Kartı Əməliyyatı Modeli
+// Gift card usage transactions / Hədiyyə kartı istifadə əməliyyatları
+model GiftCardTransaction {
+  id         String   @id @default(cuid())
+  giftCardId String
+  orderId    String? // Order where gift card was used / Hədiyyə kartının istifadə edildiyi sifariş
+  amount     Decimal  @db.Decimal(10, 2) // Transaction amount (positive for redemption, negative for refund) / Əməliyyat məbləği (müsbət istifadə üçün, mənfi geri qaytarma üçün)
+  type       String   // redemption, refund, expiry / istifadə, geri qaytarma, bitmə
+  createdAt  DateTime @default(now())
+
+  // Relations / Əlaqələr
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([giftCardId])
+  @@index([orderId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("gift_card_transactions")
+}
+
+// Product Question Model / Məhsul Sual Modeli
+// Customer questions about products / Məhsullar haqqında müştəri sualları
+model ProductQuestion {
+  id           String   @id @default(cuid())
+  productId    String
+  userId       String
+  question     String
+  status       QuestionStatus   @default(PENDING)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User            @relation("QuestionUser", fields: [userId], references: [id], onDelete: Cascade)
+  answers ProductAnswer[]
+  votes   QuestionVote[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
+  @@index([helpfulCount])
+  @@index([createdAt])
+  @@map("product_questions")
+}
+
+// Product Answer Model / Məhsul Cavab Modeli
+// Answers to product questions / Məhsul suallarına cavablar
+model ProductAnswer {
+  id           String   @id @default(cuid())
+  questionId   String
+  userId       String
+  answer       String
+  isSeller     Boolean  @default(false) // Is answer from seller / Cavab satıcıdan gəlib
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  question ProductQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User            @relation("AnswerUser", fields: [userId], references: [id], onDelete: Cascade)
+  votes    AnswerVote[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([questionId])
+  @@index([userId])
+  @@index([isSeller])
+  @@index([helpfulCount])
+  @@index([createdAt])
+  @@map("product_answers")
+}
+
+// Question Vote Model / Sual Səs Modeli
+// Votes on questions (helpful/not helpful) / Suallara səslər (faydalı/faydasız)
+model QuestionVote {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  voteType   VoteType
+  createdAt  DateTime @default(now())
+
+  // Relations / Əlaqələr
+  question ProductQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User            @relation("QuestionVoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint - one vote per user per question / Unikal məhdudiyyət - bir istifadəçi bir suala bir səs
+  @@unique([questionId, userId])
+  @@index([questionId])
+  @@index([userId])
+  @@map("question_votes")
+}
+
+// Answer Vote Model / Cavab Səs Modeli
+// Votes on answers (helpful/not helpful) / Cavablara səslər (faydalı/faydasız)
+model AnswerVote {
+  id       String   @id @default(cuid())
+  answerId String
+  userId   String
+  voteType VoteType
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  answer ProductAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  user   User          @relation("AnswerVoteUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint - one vote per user per answer / Unikal məhdudiyyət - bir istifadəçi bir cavaba bir səs
+  @@unique([answerId, userId])
+  @@index([answerId])
+  @@index([userId])
+  @@map("answer_votes")
+}
+
+// Question Status Enum / Sual Statusu Enum-u
+enum QuestionStatus {
+  PENDING  // Question is pending / Sual gözləyir
+  ANSWERED // Question has been answered / Suala cavab verilib
+  CLOSED   // Question is closed / Sual bağlıdır
+}
+
+// Vote Type Enum / Səs Tipi Enum-u
+enum VoteType {
+  HELPFUL     // Helpful vote / Faydalı səs
+  NOT_HELPFUL // Not helpful vote / Faydasız səs
+}
+
+// Social Share Model / Sosial Paylaşım Modeli
+// Track social media shares / Sosial media paylaşımlarını izlə
+model SocialShare {
+  id           String   @id @default(cuid())
+  productId    String
+  platform     String // facebook, twitter, whatsapp, telegram, linkedin, pinterest, email
+  shareCount   Int      @default(1)
+  lastSharedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, platform])
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([platform])
+  @@index([shareCount])
+  @@index([lastSharedAt])
+  @@map("social_shares")
+}
+
+// Seller Chat Room Model / Satıcı Chat Otağı Modeli
+// Direct messaging between customer and seller / Müştəri və satıcı arasında birbaşa mesajlaşma
+model SellerChatRoom {
+  id            String   @id @default(cuid())
+  customerId    String
+  sellerId      String
+  productId     String? // Optional: related product / Opsional: əlaqəli məhsul
+  status        String   @default("open") // open, closed / açıq, bağlı
+  lastMessageAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  customer User              @relation("CustomerSellerChatRooms", fields: [customerId], references: [id], onDelete: Cascade)
+  seller   User              @relation("SellerChatRooms", fields: [sellerId], references: [id], onDelete: Cascade)
+  product  Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  messages SellerChatMessage[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@unique([customerId, sellerId, productId])
+  @@index([customerId])
+  @@index([sellerId])
+  @@index([productId])
+  @@index([status])
+  @@index([lastMessageAt])
+  @@map("seller_chat_rooms")
+}
+
+// Seller Chat Message Model / Satıcı Chat Mesajı Modeli
+// Messages in seller chat rooms / Satıcı chat otaqlarındakı mesajlar
+model SellerChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  room SellerChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([roomId])
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("seller_chat_messages")
+}
+
+// Product Video Model / Məhsul Videosu Modeli
+// Videos for products / Məhsullar üçün videolar
+model ProductVideo {
+  id          String   @id @default(cuid())
+  productId   String
+  videoUrl    String
+  thumbnailUrl String?
+  title       String?
+  description String?
+  duration    Int?     // Duration in seconds / Müddət saniyələrdə
+  order       Int      @default(0) // Display order / Göstərmə sırası
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([isActive])
+  @@index([order])
+  @@map("product_videos")
+}
+
+// Product Media Model / Məhsul Media Modeli
+// Additional images and media for products / Məhsullar üçün əlavə şəkillər və media
+model ProductMedia {
+  id          String   @id @default(cuid())
+  productId   String
+  mediaUrl    String
+  mediaType   String   // image, video, gif / şəkil, video, gif
+  order       Int      @default(0) // Display order / Göstərmə sırası
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([isActive])
+  @@index([order])
+  @@map("product_media")
+}
+
+// Product 360° View / Məhsul 360° Görünüşü
+// 360-degree product view with multiple images / Çoxlu şəkillərlə 360 dərəcə məhsul görünüşü
+model Product360View {
+  id          String   @id @default(cuid())
+  productId   String   @unique // One 360° view per product / Məhsul başına bir 360° görünüş
+  imageUrls   String[] // Array of image URLs in rotation order / Fırlanma sırasına görə şəkil URL-ləri massivi
+  thumbnailUrl String?  // Thumbnail image URL / Thumbnail şəkil URL-i
+  frameCount  Int      @default(0) // Number of frames / Kadr sayı
+  isActive    Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([isActive])
+  @@map("product_360_views")
+}
+
+// Product 3D Model / Məhsul 3D Modeli
+// 3D models for AR/VR preview / AR/VR önizləmə üçün 3D modellər
+model Product3DModel {
+  id          String   @id @default(cuid())
+  productId  String   @unique // One 3D model per product / Məhsul başına bir 3D model
+  modelUrl   String   // GLTF/GLB file URL / GLTF/GLB fayl URL-i
+  thumbnailUrl String? // 3D model thumbnail / 3D model thumbnail-i
+  format     String   // gltf, glb / format
+  fileSize   Int      // File size in bytes / Fayl ölçüsü baytlarda
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([isActive])
+  @@map("product_3d_models")
+}
+
+// Review Image Model / Rəy Şəkli Modeli
+// Images attached to reviews / Rəylərə əlavə edilmiş şəkillər
+model ReviewImage {
+  id        String   @id @default(cuid())
+  reviewId String
+  imageUrl  String
+  order     Int      @default(0) // Display order / Göstərmə sırası
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([reviewId])
+  @@index([order])
+  @@map("review_images")
+}
+
+// Product Variant Model / Məhsul Variantı Modeli
+// Product variants (color, size, material, etc.) / Məhsul variantları (rəng, ölçü, material və s.)
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  name       String      // Variant name (e.g., "Red - Large") / Variant adı (məsələn, "Qırmızı - Böyük")
+  sku        String?     @unique // Stock Keeping Unit / Anbar Saxlama Vahidi
+  barcode    String?     @unique // Barcode / Barkod
+  price      Decimal?    // Variant-specific price (if different from product price) / Variant-a xas qiymət (məhsul qiymətindən fərqli olarsa)
+  stock      Int         @default(0) // Available stock / Mövcud anbar
+  attributes String      // JSON string with variant attributes (color, size, material, etc.) / Variant atributları ilə JSON string (rəng, ölçü, material və s.)
+  image      String?     // Variant-specific image / Variant-a xas şəkil
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  // Relations / Əlaqələr
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([sku])
+  @@index([barcode])
+  @@index([isActive])
+  @@map("product_variants")
+}
+
+// Review Video Model / Rəy Videosu Modeli
+// Videos attached to reviews / Rəylərə əlavə edilmiş videolar
+model ReviewVideo {
+  id          String   @id @default(cuid())
+  reviewId    String   @unique // One video per review / Rəy başına bir video
+  videoUrl    String
+  thumbnailUrl String?
+  duration    Int?     // Duration in seconds / Müddət saniyələrdə
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([reviewId])
+  @@map("review_videos")
+}
+
+// Review Vote Model / Rəy Səsi Modeli
+// Helpful/not helpful votes on reviews / Rəylərə faydalı/faydasız səslər
+model ReviewVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  voteType  String   // helpful, not_helpful / faydalı, faydasız
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint - user can only vote once per review / Unikal məhdudiyyət - istifadəçi hər rəyə yalnız bir dəfə səs verə bilər
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@index([userId])
+  @@index([voteType])
+  @@map("review_votes")
+}
+
+// User Role Enum / İstifadəçi Rol Enum-u
+enum UserRole {
+  CUSTOMER // Regular customer / Adi müştəri
+  SELLER   // Seller / Satıcı
+  COURIER  // Courier / Kuryer
+  ADMIN    // Administrator / Administrator
+}
+
+// Order Status Enum / Sifariş Statusu Enum-u
+enum OrderStatus {
+  PENDING         // Order is pending / Sifariş gözləyir
+  PENDING_PAYMENT // Payment is pending / Ödəniş gözləyir
+  CONFIRMED       // Order is confirmed / Sifariş təsdiqlənib
+  SHIPPED         // Order is shipped / Sifariş göndərilib
+  DELIVERED       // Order is delivered / Sifariş çatdırılıb
+  CANCELLED       // Order is cancelled / Sifariş ləğv edilib
+  PAYMENT_FAILED  // Payment failed / Ödəniş uğursuz oldu
 }
 
 // Backup Model / Backup Modeli
+// Database backups / Veritabanı backup-ları
 model Backup {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  type        String      // FULL, INCREMENTAL, DIFFERENTIAL
-  status      BackupStatus @default(IN_PROGRESS)
-  size        Int         @default(0)
-  metadata    String?     // JSON string
-  filePath    String?
-  userId      String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id          String   @id @default(cuid())
+  createdBy   String
+  fileName    String
+  fileSize    Int      // Size in bytes / Ölçü baytlarda
+  status      String   // IN_PROGRESS, COMPLETED, FAILED, RESTORING, RESTORE_FAILED / İŞLƏYİR, TAMAMLANDI, UĞURSUZ, BƏRPASI, BƏRPAS_UĞURSUZ
+  backupType  String   // FULL, INCREMENTAL / TAM, ARALIQ
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations / Əlaqələr
-  user User @relation(fields: [userId], references: [id])
+  creator User @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([createdBy])
+  @@index([status])
+  @@index([backupType])
+  @@index([startedAt])
   @@map("backups")
 }
 
 // Audit Log Model / Audit Log Modeli
+// System audit logs / Sistem audit log-ları
 model AuditLog {
-  id           String   @id @default(cuid())
-  userId       String
-  action       String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
-  resourceType String   // USER, PRODUCT, ORDER, CATEGORY, etc.
-  resourceId   String?
-  details      String?  // JSON string
-  ipAddress    String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc. / YARAT, YENİLƏ, SİL, GİRİŞ, ÇIXIŞ və s.
+  entityType  String?  // User, Product, Order, etc. / İstifadəçi, Məhsul, Sifariş və s.
+  entityId    String?
+  details     String?  // JSON string with details / Detallarla JSON string
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
 
   // Relations / Əlaqələr
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
-// Enums / Enumlar
-enum BackupStatus {
-  IN_PROGRESS
-  COMPLETED
-  FAILED
-  RESTORING
-  RESTORE_FAILED
+// Banner Model / Banner Modeli
+// Homepage banners / Ana səhifə banner-ləri
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  linkUrl     String?
+  position    String   // top, middle, bottom / yuxarı, orta, aşağı
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  clickCount  Int      @default(0)
+  impressionCount Int  @default(0)
+  createdBy   String
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  creator User  @relation("BannerCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  updater User? @relation("BannerUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@index([position])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdAt])
+  @@map("banners")
+}
+
+// Homepage Section Model / Ana Səhifə Bölməsi Modeli
+// Dynamic homepage sections / Dinamik ana səhifə bölmələri
+model HomepageSection {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   // featured_products, categories, deals, etc. / seçilmiş_məhsullar, kateqoriyalar, təkliflər və s.
+  order      Int      @default(0)
+  isActive    Boolean  @default(true)
+  config      String?  // JSON configuration / JSON konfiqurasiya
+  createdBy   String
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  creator User  @relation("HomepageSectionCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  updater User? @relation("HomepageSectionUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@index([order])
+  @@index([type])
+  @@index([createdAt])
+  @@map("homepage_sections")
+}
+
+// Page Model / Səhifə Modeli
+// Custom pages (About, Terms, Privacy, etc.) / Xüsusi səhifələr (Haqqımızda, Şərtlər, Məxfilik və s.)
+model Page {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  content     String   // HTML content / HTML məzmun
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdBy   String
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  creator User  @relation("PageCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  updater User? @relation("PageUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+  versions ContentVersion[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([slug])
+  @@index([isPublished])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@map("pages")
+}
+
+// Content Version Model / Məzmun Versiyası Modeli
+// Version history for pages / Səhifələr üçün versiya tarixçəsi
+model ContentVersion {
+  id          String   @id @default(cuid())
+  pageId      String
+  title       String
+  content     String
+  version     Int      @default(1)
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  // Relations / Əlaqələr
+  page    Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  creator User @relation("ContentVersionCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([pageId])
+  @@index([version])
+  @@index([createdAt])
+  @@map("content_versions")
+}
+
+// Search History Model / Axtarış Tarixçəsi Modeli
+// Stores user search queries for history and suggestions / İstifadəçi axtarış sorğularını tarixçə və təkliflər üçün saxlayır
+model SearchHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  query        String
+  resultsCount Int?
+  filters      Json?    // Store applied filters as JSON / Tətbiq edilmiş filtrləri JSON kimi saxla
+  timestamp    DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([query])
+  @@index([timestamp])
+  @@index([userId, timestamp])
+  @@map("search_history")
+}
+
+// Recently Viewed Products Model / Son Baxılan Məhsullar Modeli
+// Tracks products viewed by users / İstifadəçilərin baxdığı məhsulları izləyir
+model RecentlyViewed {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@index([viewedAt])
+  @@index([userId, viewedAt])
+  @@map("recently_viewed")
+}
+
+// Flash Sale Model / Flash Sale Modeli
+// Flash sales and limited-time deals / Flash satışlar və məhdud müddətli təkliflər
+model FlashSale {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  discount    Decimal   // Discount percentage / Endirim faizi
+  productIds  String[]  // Array of product IDs / Məhsul ID-lərinin massivi
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([createdAt])
+  @@map("flash_sales")
+}
+
+// Size Guide Model / Ölçü Bələdçisi Modeli
+// Size guides for different categories / Müxtəlif kateqoriyalar üçün ölçü bələdçiləri
+model SizeGuide {
+  id          String   @id @default(cuid())
+  categoryId  String?
+  title       String
+  content     String   // HTML content or markdown / HTML məzmun və ya markdown
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("size_guides")
+}
+
+// Product Bundle Model / Məhsul Paketi Modeli
+// Product bundles and combos / Məhsul paketləri və kombolar
+model ProductBundle {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  bundlePrice Decimal  // Special price for bundle / Paket üçün xüsusi qiymət
+  discount    Decimal? // Discount percentage / Endirim faizi
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  items BundleItem[]
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("product_bundles")
+}
+
+// Bundle Item Model / Paket Elementi Modeli
+// Items in a product bundle / Məhsul pakətindəki elementlər
+model BundleItem {
+  id          String   @id @default(cuid())
+  bundleId    String
+  productId   String
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  bundle  ProductBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@unique([bundleId, productId])
+  @@index([bundleId])
+  @@index([productId])
+  @@map("bundle_items")
+}
+
+// Recommendation Event Model / Tövsiyə Hadisəsi Modeli
+// Track recommendation performance (CTR, conversion, etc.) / Tövsiyə performansını izlə (CTR, conversion, və s.)
+model RecommendationEvent {
+  id                String   @id @default(cuid())
+  productId         String
+  recommendationType String  // popular, similar, personalized, etc. / populyar, oxşar, fərdiləşdirilmiş, və s.
+  sourceProductId   String?  // Product that triggered the recommendation / Tövsiyəni təmin edən məhsul
+  userId            String?  // User who saw/clicked the recommendation / Tövsiyəni görən/klikləyən istifadəçi
+  eventType         String   // impression, click, add_to_cart, purchase / impression, click, add_to_cart, purchase
+  timestamp         DateTime @default(now())
+
+  // Relations / Əlaqələr
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([productId])
+  @@index([recommendationType])
+  @@index([eventType])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([sourceProductId])
+  @@map("recommendation_events")
+}
+
+// Saved Payment Method Model / Saxlanılmış Ödəniş Metodu Modeli
+// User saved payment methods (cards, etc.) / İstifadəçi saxlanılmış ödəniş metodları (kartlar, və s.)
+model SavedPaymentMethod {
+  id                  String   @id @default(cuid())
+  userId              String
+  type                String   // card, paypal, bank_transfer, etc. / kart, paypal, bank_transfer, və s.
+  last4               String?  // Last 4 digits of card / Kartın son 4 rəqəmi
+  brand               String?  // Card brand (visa, mastercard, etc.) / Kart markası (visa, mastercard, və s.)
+  expiryMonth         Int?     // Expiry month / Bitmə ayı
+  expiryYear          Int?     // Expiry year / Bitmə ili
+  isDefault           Boolean  @default(false)
+  stripePaymentMethodId String? @unique // Stripe payment method ID / Stripe ödəniş metodu ID-si
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([isDefault])
+  @@index([type])
+  @@map("saved_payment_methods")
+}
+
+// Return Request Model / Qaytarma Sorğusu Modeli
+// Order return requests / Sifariş qaytarma sorğuları
+model ReturnRequest {
+  id                String   @id @default(cuid())
+  orderId           String
+  orderItemId       String?  // Specific item to return / Qaytarılacaq xüsusi element
+  userId            String
+  reason            String   // Return reason / Qaytarma səbəbi
+  description       String?  // Additional details / Əlavə detallar
+  quantity          Int      @default(1) // Quantity to return / Qaytarılacaq miqdar
+  refundMethod      String   // original_payment, store_credit / orijinal_ödəniş, mağaza_krediti
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED, RECEIVED, REFUNDED
+  damagePhotos      String[] // Array of photo URLs / Şəkil URL-ləri array-i
+  returnLabelUrl    String?  // Return shipping label URL / Qaytarma çatdırılma etiketi URL
+  trackingNumber    String?  // Return tracking number / Qaytarma izləmə nömrəsi
+  refundAmount      Decimal? // Refund amount / Geri qaytarma məbləği
+  refundId          String?  // External refund ID (Stripe, etc.) / Xarici geri qaytarma ID (Stripe, və s.)
+  approvedBy        String?  // Admin user ID who approved / Təsdiq edən admin istifadəçi ID-si
+  approvedAt        DateTime?
+  rejectedReason    String?  // Reason for rejection / Rədd edilmə səbəbi
+  receivedAt        DateTime?
+  refundedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approver  User?  @relation("ReturnApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("return_requests")
+}
+
+// Refund Model / Geri Qaytarma Modeli
+// Refund records / Geri qaytarma qeydləri
+model Refund {
+  id                String   @id @default(cuid())
+  orderId           String
+  returnRequestId   String?  // Associated return request / Əlaqəli qaytarma sorğusu
+  userId            String
+  amount            Decimal
+  refundMethod      String   // original_payment, store_credit / orijinal_ödəniş, mağaza_krediti
+  status            String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  paymentMethod     String?  // Original payment method / Orijinal ödəniş metodu
+  paymentIntentId   String?  // Stripe payment intent ID / Stripe ödəniş niyyəti ID
+  refundTransactionId String? // External refund transaction ID / Xarici geri qaytarma transaction ID
+  failureReason     String?  // Reason for failure / Uğursuzluq səbəbi
+  processedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([orderId])
+  @@index([userId])
+  @@index([returnRequestId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("refunds")
+}
+
+// Email Subscription Model / Email Abunəlik Modeli
+// User email subscription preferences / İstifadəçi email abunəlik parametrləri
+model EmailSubscription {
+  id              String   @id @default(cuid())
+  userId          String
+  email           String
+  subscriptionType String  // newsletter, promotions, order_updates, product_recommendations / xəbərlər, təşviqlər, sifariş_yeniləmələri, məhsul_tövsiyələri
+  isActive        Boolean  @default(true)
+  preferences     Json?    // Category preferences, frequency, etc. / Kateqoriya parametrləri, tezlik və s.
+  frequency       String?  // daily, weekly, monthly / günlük, həftəlik, aylıq
+  unsubscribedAt  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: one subscription per user per type / Unikal məhdudiyyət: istifadəçi başına tip başına bir abunəlik
+  @@unique([userId, subscriptionType])
+  
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([email])
+  @@index([subscriptionType])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("email_subscriptions")
+}
+
+// Cookie Consent Model / Cookie Razılıq Modeli
+// User cookie consent records / İstifadəçi cookie razılıq qeydləri
+model CookieConsent {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  preferences Json     // Cookie preferences / Cookie tərcihləri
+  consentedAt DateTime @default(now())
+  withdrawnAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes for better query performance / Daha yaxşı sorğu performansı üçün index-lər
+  @@index([userId])
+  @@index([consentedAt])
+  @@map("cookie_consents")
+}
+
+// Blog Category Model / Blog Kateqoriya Modeli
+model BlogCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  posts BlogPost[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@map("blog_categories")
+}
+
+// Blog Tag Model / Blog Tag Modeli
+model BlogTag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  posts BlogPostTag[]
+
+  @@index([slug])
+  @@map("blog_tags")
+}
+
+// Blog Post Tag Junction Model / Blog Yazısı Tag Birləşmə Modeli
+model BlogPostTag {
+  id      String   @id @default(cuid())
+  postId  String
+  tagId   String
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+  @@map("blog_post_tags")
+}
+
+// Blog Post Model / Blog Yazısı Modeli
+model BlogPost {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  excerpt          String?
+  content         String   // Rich text content / Formatlanmış məzmun
+  featuredImage   String?
+  authorId        String
+  categoryId      String?
+  publishedAt     DateTime?
+  isPublished     Boolean  @default(false)
+  isFeatured      Boolean  @default(false)
+  viewCount       Int      @default(0)
+  shareCount      Int      @default(0)
+  readingTime     Int?     // Estimated reading time in minutes / Təxmini oxuma vaxtı dəqiqələrlə
+  seoTitle        String?
+  seoDescription  String?
+  seoKeywords     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  author     User          @relation("BlogPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  category   BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags       BlogPostTag[]
+  comments   BlogComment[]
+  views      BlogView[]
+  analytics  BlogAnalytics?
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@map("blog_posts")
+}
+
+// Blog Comment Model / Blog Şərhi Modeli
+model BlogComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String?
+  name      String?  // For anonymous comments / Anonim şərhlər üçün
+  email     String?  // For anonymous comments / Anonim şərhlər üçün
+  content   String
+  parentId  String?  // For nested comments / İç-içə şərhlər üçün
+  isApproved Boolean @default(false)
+  isSpam    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  post   BlogPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   User?         @relation("BlogCommentAuthor", fields: [userId], references: [id], onDelete: SetNull)
+  parent BlogComment?   @relation("BlogCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies BlogComment[] @relation("BlogCommentReplies")
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([isApproved])
+  @@index([createdAt])
+  @@map("blog_comments")
+}
+
+// Blog View Model / Blog Baxış Modeli
+model BlogView {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String?  // Optional, for logged-in users / Opsional, daxil olmuş istifadəçilər üçün
+  ipAddress String?  // For anonymous tracking / Anonim izləmə üçün
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("blog_views")
+}
+
+// Blog Analytics Model / Blog Analitika Modeli
+model BlogAnalytics {
+  id        String   @id @default(cuid())
+  postId    String   @unique
+  viewCount Int      @default(0)
+  shareCount Int     @default(0)
+  avgReadingTime Int? // Average reading time in seconds / Orta oxuma vaxtı saniyələrlə
+  bounceRate Float?  // Bounce rate percentage / Sıçrayış dərəcəsi faizlə
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("blog_analytics")
+}
+
+// Help Category Model / Yardım Kateqoriya Modeli
+model HelpCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?  // Icon name or URL / İkon adı və ya URL
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  articles HelpArticle[]
+  subcategories HelpSubcategory[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([order])
+  @@map("help_categories")
+}
+
+// Help Subcategory Model / Yardım Alt Kateqoriya Modeli
+model HelpSubcategory {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  slug        String
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  category HelpCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  articles HelpArticle[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([order])
+  @@map("help_subcategories")
+}
+
+// Help Article Model / Yardım Məqaləsi Modeli
+model HelpArticle {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  content       String   // Rich text content / Formatlanmış məzmun
+  excerpt        String?
+  categoryId    String?
+  subcategoryId String?
+  authorId      String?
+  viewCount     Int      @default(0)
+  helpfulCount  Int      @default(0)
+  notHelpfulCount Int    @default(0)
+  isPublished   Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+  order         Int      @default(0)
+  seoTitle      String?
+  seoDescription String?
+  seoKeywords   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  publishedAt   DateTime?
+
+  // Relations / Əlaqələr
+  category    HelpCategory?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategory HelpSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  author      User?             @relation("HelpArticleAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  ratings     HelpArticleRating[]
+  feedbacks   HelpArticleFeedback[]
+  relatedArticles HelpArticleRelation[] @relation("RelatedArticle")
+  relatedToArticles HelpArticleRelation[] @relation("SourceArticle")
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([order])
+  @@index([createdAt])
+  @@map("help_articles")
+}
+
+// Help Article Rating Model / Yardım Məqaləsi Reytinqi Modeli
+model HelpArticleRating {
+  id        String   @id @default(cuid())
+  articleId String
+  userId    String?  // Optional for anonymous ratings / Anonim reytinqlər üçün opsional
+  isHelpful Boolean  // true = helpful, false = not helpful / true = faydalı, false = faydasız
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  article HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User?       @relation("HelpArticleRatingUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([articleId, userId])
+  @@index([articleId])
+  @@index([userId])
+  @@index([isHelpful])
+  @@map("help_article_ratings")
+}
+
+// Help Article Feedback Model / Yardım Məqaləsi Rəyi Modeli
+model HelpArticleFeedback {
+  id        String   @id @default(cuid())
+  articleId String
+  userId    String?
+  name      String?  // For anonymous feedback / Anonim rəy üçün
+  email     String?  // For anonymous feedback / Anonim rəy üçün
+  feedback  String
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  article HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User?       @relation("HelpArticleFeedbackUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("help_article_feedback")
+}
+
+// Help Article Relation Model / Yardım Məqaləsi Əlaqəsi Modeli
+model HelpArticleRelation {
+  id            String   @id @default(cuid())
+  sourceArticleId String
+  relatedArticleId String
+  createdAt     DateTime @default(now())
+
+  // Relations / Əlaqələr
+  sourceArticle  HelpArticle @relation("SourceArticle", fields: [sourceArticleId], references: [id], onDelete: Cascade)
+  relatedArticle HelpArticle @relation("RelatedArticle", fields: [relatedArticleId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceArticleId, relatedArticleId])
+  @@index([sourceArticleId])
+  @@index([relatedArticleId])
+  @@map("help_article_relations")
+}
+
+// FAQ Category Model / FAQ Kateqoriya Modeli
+model FAQCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  questions FAQ[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([order])
+  @@map("faq_categories")
+}
+
+// FAQ Model / FAQ Modeli
+model FAQ {
+  id            String   @id @default(cuid())
+  question      String
+  answer        String
+  categoryId    String?
+  viewCount     Int      @default(0)
+  helpfulCount  Int      @default(0)
+  notHelpfulCount Int    @default(0)
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  category FAQCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  ratings FAQRating[]
+  feedbacks FAQFeedback[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([order])
+  @@index([createdAt])
+  @@map("faqs")
+}
+
+// FAQ Rating Model / FAQ Reytinqi Modeli
+model FAQRating {
+  id        String   @id @default(cuid())
+  faqId     String
+  userId    String?
+  isHelpful Boolean
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  faq  FAQ   @relation(fields: [faqId], references: [id], onDelete: Cascade)
+  user User? @relation("FAQRatingUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([faqId, userId])
+  @@index([faqId])
+  @@index([userId])
+  @@index([isHelpful])
+  @@map("faq_ratings")
+}
+
+// FAQ Feedback Model / FAQ Rəyi Modeli
+model FAQFeedback {
+  id        String   @id @default(cuid())
+  faqId     String
+  userId    String?
+  name      String?
+  email     String?
+  feedback  String
+  createdAt DateTime @default(now())
+
+  // Relations / Əlaqələr
+  faq  FAQ   @relation(fields: [faqId], references: [id], onDelete: Cascade)
+  user User? @relation("FAQFeedbackUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([faqId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("faq_feedback")
+}
+
+// Email Campaign Model / Email Kampaniya Modeli
+model EmailCampaign {
+  id              String   @id @default(cuid())
+  name            String
+  subject         String
+  templateId      String?
+  content         String   // HTML content / HTML məzmun
+  status          String   @default("draft") // draft, scheduled, sending, sent, paused, cancelled
+  campaignType    String   // newsletter, promotional, transactional, abandoned_cart, welcome, etc.
+  audienceSegment Json?    // Audience segmentation criteria / Auditoriya seqmentasiya meyarları
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+
+  // Relations / Əlaqələr
+  template EmailTemplate? @relation("EmailCampaignTemplate", fields: [templateId], references: [id], onDelete: SetNull)
+  creator User           @relation("EmailCampaignCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  recipients EmailCampaignRecipient[]
+  analytics EmailCampaignAnalytics?
+
+  @@index([status])
+  @@index([campaignType])
+  @@index([scheduledAt])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("email_campaigns")
+}
+
+// Email Template Model / Email Şablonu Modeli
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String   // HTML template with variables / Dəyişənlərlə HTML şablonu
+  variables   Json?    // Available variables / Mövcud dəyişənlər
+  category    String   // welcome, order_confirmation, promotional, etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  campaigns EmailCampaign[] @relation("EmailCampaignTemplate")
+  automationWorkflows EmailAutomationWorkflow[] @relation("EmailAutomationWorkflowTemplate")
+  automations EmailAutomation[] @relation("EmailAutomationTemplate")
+
+  @@index([category])
+  @@index([isActive])
+  @@map("email_templates")
+}
+
+// Email Campaign Recipient Model / Email Kampaniya Alıcısı Modeli
+model EmailCampaignRecipient {
+  id          String   @id @default(cuid())
+  campaignId  String
+  userId      String?
+  email       String
+  status      String   @default("pending") // pending, sent, delivered, opened, clicked, bounced, unsubscribed
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  bouncedAt   DateTime?
+  errorMessage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User?         @relation("EmailCampaignRecipientUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@map("email_campaign_recipients")
+}
+
+// Email Campaign Analytics Model / Email Kampaniya Analitika Modeli
+model EmailCampaignAnalytics {
+  id          String   @id @default(cuid())
+  campaignId  String   @unique
+  totalSent   Int      @default(0)
+  totalDelivered Int   @default(0)
+  totalOpened Int      @default(0)
+  totalClicked Int     @default(0)
+  totalBounced Int     @default(0)
+  totalUnsubscribed Int @default(0)
+  openRate    Float    @default(0)
+  clickRate   Float    @default(0)
+  bounceRate  Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("email_campaign_analytics")
+}
+
+// Email Automation Model / Email Avtomatlaşdırma Modeli
+model EmailAutomation {
+  id          String   @id @default(cuid())
+  name        String
+  triggerType String   // abandoned_cart, welcome_series, birthday, post_purchase, etc.
+  triggerConditions Json // Trigger conditions / Trigger şərtləri
+  templateId  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  // Relations / Əlaqələr
+  template EmailTemplate? @relation("EmailAutomationTemplate", fields: [templateId], references: [id], onDelete: SetNull)
+  creator  User           @relation("EmailAutomationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  workflows EmailAutomationWorkflow[]
+
+  @@index([triggerType])
+  @@index([isActive])
+  @@index([createdBy])
+  @@map("email_automations")
+}
+
+// Email Automation Workflow Model / Email Avtomatlaşdırma İş Axını Modeli
+model EmailAutomationWorkflow {
+  id          String   @id @default(cuid())
+  automationId String
+  stepOrder   Int      // Step order in workflow / İş axınında addım sırası
+  delayDays   Int      @default(0) // Days to wait before sending / Göndərmədən əvvəl gözləmə günləri
+  templateId  String?
+  conditions  Json?    // Additional conditions / Əlavə şərtlər
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  automation EmailAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  template   EmailTemplate?  @relation("EmailAutomationWorkflowTemplate", fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([automationId])
+  @@index([stepOrder])
+  @@map("email_automation_workflows")
+}
+
+// Push Notification Subscription Model / Push Bildiriş Abunəliyi Modeli
+model PushNotificationSubscription {
+  id          String   @id @default(cuid())
+  userId      String?
+  endpoint    String   @unique // Web Push API endpoint / Web Push API endpoint
+  p256dh      String   // Public key / Açıq açar
+  auth        String   // Auth secret / Auth gizli açarı
+  userAgent   String?
+  deviceType  String?  // web, mobile / web, mobil
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  user         User?                    @relation("PushNotificationSubscriptionUser", fields: [userId], references: [id], onDelete: Cascade)
+  preferences  PushNotificationPreferences?
+  deliveries   PushNotificationDelivery[]
+
+  @@index([userId])
+  @@index([deviceType])
+  @@map("push_notification_subscriptions")
+}
+
+// Push Notification Preferences Model / Push Bildiriş Parametrləri Modeli
+model PushNotificationPreferences {
+  id          String   @id @default(cuid())
+  subscriptionId String @unique
+  orderUpdates Boolean @default(true)
+  promotions  Boolean  @default(true)
+  reminders   Boolean  @default(true)
+  marketing   Boolean  @default(false)
+  quietHoursStart String? // e.g., "22:00" / məsələn, "22:00"
+  quietHoursEnd   String? // e.g., "08:00" / məsələn, "08:00"
+  frequency   String   @default("immediate") // immediate, daily, weekly / dərhal, günlük, həftəlik
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  subscription PushNotificationSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@map("push_notification_preferences")
+}
+
+// Push Notification Template Model / Push Bildiriş Şablonu Modeli
+model PushNotificationTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  title       String
+  body        String
+  icon        String?
+  image       String?
+  badge       String?
+  category    String   // order, promotion, reminder, marketing / sifariş, təşviq, xatırlatma, marketinq
+  actionUrl   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  notifications PushNotification[]
+
+  @@index([category])
+  @@index([isActive])
+  @@map("push_notification_templates")
+}
+
+// Push Notification Model / Push Bildiriş Modeli
+model PushNotification {
+  id          String   @id @default(cuid())
+  templateId  String?
+  title       String
+  body        String
+  icon        String?
+  image       String?
+  badge       String?
+  category    String
+  actionUrl   String?
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  status      String   @default("pending") // pending, sent, failed / gözləyir, göndərildi, uğursuz
+  audienceSegment Json? // Audience targeting / Auditoriya hədəfləməsi
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  // Relations / Əlaqələr
+  template  PushNotificationTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  creator   User                      @relation("PushNotificationCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  deliveries PushNotificationDelivery[]
+  analytics PushNotificationAnalytics?
+
+  @@index([status])
+  @@index([category])
+  @@index([scheduledAt])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@map("push_notifications")
+}
+
+// Push Notification Delivery Model / Push Bildiriş Çatdırılması Modeli
+model PushNotificationDelivery {
+  id          String   @id @default(cuid())
+  notificationId String
+  subscriptionId String
+  status      String   @default("pending") // pending, sent, delivered, opened, failed / gözləyir, göndərildi, çatdırıldı, açıldı, uğursuz
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  errorMessage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  notification PushNotification            @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  subscription PushNotificationSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("push_notification_deliveries")
+}
+
+// Push Notification Analytics Model / Push Bildiriş Analitika Modeli
+model PushNotificationAnalytics {
+  id          String   @id @default(cuid())
+  notificationId String @unique
+  totalSent   Int      @default(0)
+  totalDelivered Int   @default(0)
+  totalOpened Int      @default(0)
+  totalFailed Int      @default(0)
+  deliveryRate Float   @default(0)
+  openRate    Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  notification PushNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@map("push_notification_analytics")
+}
+
+// Marketing Automation Workflow Model / Marketinq Avtomatlaşdırması İş Axını Modeli
+model MarketingAutomationWorkflow {
+  id          String   @id @default(cuid())
+  name        String
+  workflowType String  // abandoned_cart, welcome_series, re_engagement, birthday, post_purchase / tərk_edilmiş_səbət, xoş_gəlmisiniz_seriyası, yenidən_aktivləşdirmə, doğum_günü, satışdan_sonra
+  triggerType String   // behavior, time, event, segment / davranış, vaxt, hadisə, seqment
+  triggerConditions Json // Trigger conditions / Trigger şərtləri
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+
+  // Relations / Əlaqələr
+  creator  User                        @relation("MarketingAutomationWorkflowCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  steps    MarketingAutomationStep[]
+  executions MarketingAutomationExecution[]
+
+  @@index([workflowType])
+  @@index([triggerType])
+  @@index([isActive])
+  @@index([createdBy])
+  @@map("marketing_automation_workflows")
+}
+
+// Marketing Automation Step Model / Marketinq Avtomatlaşdırması Addımı Modeli
+model MarketingAutomationStep {
+  id          String   @id @default(cuid())
+  workflowId  String
+  stepOrder   Int      // Step order in workflow / İş axınında addım sırası
+  actionType  String   // email, push_notification, sms, discount_code / email, push_bildiriş, sms, endirim_kodu
+  delayHours  Int      @default(0) // Hours to wait before executing / İcra etmədən əvvəl gözləmə saatları
+  actionConfig Json    // Action configuration / Hərəkət konfiqurasiyası
+  conditions  Json?    // Additional conditions / Əlavə şərtlər
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  workflow MarketingAutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([stepOrder])
+  @@map("marketing_automation_steps")
+}
+
+// Marketing Automation Execution Model / Marketinq Avtomatlaşdırması İcrası Modeli
+model MarketingAutomationExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  userId      String
+  stepId      String?
+  status      String   @default("pending") // pending, executing, completed, failed, cancelled / gözləyir, icra_olunur, tamamlandı, uğursuz, ləğv_edildi
+  triggeredAt DateTime @default(now())
+  executedAt  DateTime?
+  completedAt DateTime?
+  errorMessage String?
+  context     Json?    // Execution context / İcra konteksti
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations / Əlaqələr
+  workflow MarketingAutomationWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user     User                       @relation("MarketingAutomationExecutionUser", fields: [userId], references: [id], onDelete: Cascade)
+  step     MarketingAutomationStep?    @relation("MarketingAutomationExecutionStep", fields: [stepId], references: [id], onDelete: SetNull)
+
+  @@index([workflowId])
+  @@index([userId])
+  @@index([stepId])
+  @@index([status])
+  @@index([triggeredAt])
+  @@map("marketing_automation_executions")
 }

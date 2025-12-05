@@ -1,9 +1,9 @@
-# Yusu E-commerce User Manual / Yusu E-ticarət İstifadəçi Təlimatı
+# Ulustore E-commerce User Manual / Ulustore E-ticarət İstifadəçi Təlimatı
 
 ## Welcome / Xoş Gəlmisiniz
 
-Welcome to Yusu E-commerce platform! This manual will guide you through all features and functionalities.
-Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsusiyyətlər və funksionallıqlar vasitəsilə aparacaq.
+Welcome to Ulustore E-commerce platform! This manual will guide you through all features and functionalities.
+Ulustore E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsusiyyətlər və funksionallıqlar vasitəsilə aparacaq.
 
 ## Table of Contents / Məzmun Cədvəli
 
@@ -20,8 +20,8 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 ### Creating an Account / Hesab Yaratmaq
 
 1. **Visit the Website / Saytı Ziyarət Edin:**
-   - Go to `http://localhost:3000` (development) / `http://localhost:3000`-ə get (inkişaf)
-   - Or your production domain / Və ya production domain-iniz
+   - Go to `https://ulustore.com` (production) / `https://ulustore.com`-ə get (production)
+   - Or `http://localhost:3000` (development) / Və ya `http://localhost:3000` (inkişaf)
 
 2. **Sign Up / Qeydiyyat:**
    - Click "Sign Up" / "Qeydiyyat" düyməsini bas
@@ -114,7 +114,7 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 ### Accessing Seller Panel / Satıcı Panelinə Daxil Olmaq
 
 1. **Login / Giriş:**
-   - Go to `/seller` / `/seller`-ə get
+   - Go to `https://seller.ulustore.com` / `https://seller.ulustore.com`-ə get
    - Use seller credentials / Satıcı məlumatlarını istifadə et
 
 2. **Dashboard Overview / Dashboard Ümumi Baxış:**
@@ -158,7 +158,7 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 ### Accessing Courier Panel / Kuryer Panelinə Daxil Olmaq
 
 1. **Login / Giriş:**
-   - Go to `/courier` / `/courier`-ə get
+   - Go to `https://courier.ulustore.com` / `https://courier.ulustore.com`-ə get
    - Use courier credentials / Kuryer məlumatlarını istifadə et
 
 2. **Dashboard Overview / Dashboard Ümumi Baxış:**
@@ -188,7 +188,7 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 ### Accessing Admin Panel / Admin Panelinə Daxil Olmaq
 
 1. **Login / Giriş:**
-   - Go to `/admin/dashboard` / `/admin/dashboard`-ə get
+   - Go to `https://admin.ulustore.com` / `https://admin.ulustore.com`-ə get
    - Use admin credentials / Admin məlumatlarını istifadə et
 
 2. **Dashboard Overview / Dashboard Ümumi Baxış:**
@@ -265,9 +265,9 @@ Yusu E-ticarət platformasına xoş gəlmisiniz! Bu təlimat sizi bütün xüsus
 
 ## Contact Information / Əlaqə Məlumatları
 
-- **Website**: https://azliner.info
-- **Email**: info@azliner.info
-- **Support**: support@azliner.info
+- **Website**: https://ulustore.com
+- **Email**: info@ulustore.com
+- **Support**: support@ulustore.com
 - **Phone**: +994 12 345 67 89
 
 ---

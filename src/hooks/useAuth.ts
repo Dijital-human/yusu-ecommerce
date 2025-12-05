@@ -10,26 +10,23 @@ import { useEffect } from "react";
 import { UserRole } from "@/types";
 
 export function useAuth() {
-  const { data: session, status, update } = useSession();
+  const sessionResult = useSession();
   const router = useRouter();
+
+  // Handle case where useSession returns undefined during static generation
+  // Statik generasiya zamanı useSession undefined qaytardığı halı idarə et
+  const session = sessionResult?.data;
+  const status = sessionResult?.status || "unauthenticated";
+  const update = sessionResult?.update || (async () => {});
 
   const isLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
   const user = session?.user;
 
-  // Debug: Log authentication state / Debug: Autentifikasiya vəziyyətini log et
-  console.log("useAuth - status:", status);
-  console.log("useAuth - isAuthenticated:", isAuthenticated);
-  console.log("useAuth - user:", user);
-  console.log("useAuth - session:", session);
-  
-  // Debug: Log session update function / Debug: Session update funksiyasını log et
-  console.log("useAuth - update function:", typeof update);
-  
-  // Debug: Log session error if any / Debug: Session xətasını log et
-  if (status === "unauthenticated") {
-    console.log("useAuth - User is unauthenticated, checking for errors");
-  }
+  // Debug: Log authentication state only in development and only on errors
+  // Debug: Autentifikasiya vəziyyətini yalnız development zamanı və yalnız xəta olduqda log et
+  // Removed frequent logging to reduce console spam / Console spam-i azaltmaq üçün tez-tez log-lamə silindi
+  // Log only on authentication errors or significant state changes / Yalnız autentifikasiya xətalarında və ya əhəmiyyətli vəziyyət dəyişikliklərində log et
 
   // Redirect to login if not authenticated / Əgər autentifikasiya olunmayıbsa giriş səhifəsinə yönləndir
   const requireAuth = (redirectTo: string = "/auth/signin") => {
@@ -80,17 +77,20 @@ export function useAuth() {
 
   // Sign out / Çıxış et
   const handleSignOut = (callbackUrl?: string) => {
-    console.log("useAuth - handleSignOut called");
+    if (process.env.NODE_ENV === 'development') {
+      console.log("useAuth - handleSignOut called");
+    }
     signOut({ callbackUrl: callbackUrl || "/" });
   };
   
   // Force session refresh / Sessiyanı məcburi yenilə
   const refreshSession = async () => {
-    console.log("useAuth - refreshSession called");
+    // Removed console.log to reduce spam / Spam-i azaltmaq üçün console.log silindi
     try {
       await update();
-      console.log("useAuth - session refreshed");
+      // Removed success log to reduce spam / Spam-i azaltmaq üçün uğur log-u silindi
     } catch (error) {
+      // Only log errors / Yalnız xətaları log et
       console.error("useAuth - session refresh error:", error);
     }
   };

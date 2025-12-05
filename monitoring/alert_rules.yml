@@ -1,0 +1,200 @@
+# Prometheus Alert Rules / Prometheus Xəbərdarlıq Qaydaları
+# Comprehensive alerting for production monitoring / Production monitorinqi üçün hərtərəfli xəbərdarlıq
+
+groups:
+  - name: yusu-production-alerts
+    rules:
+      # High Error Rate / Yüksək Xəta Dərəcəsi
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "High error rate detected"
+          summary_az: "Yüksək xəta dərəcəsi aşkar edildi"
+          description: "Error rate is {{ $value }} errors per second for {{ $labels.job }}"
+          description_az: "{{ $labels.job }} üçün xəta dərəcəsi saniyədə {{ $value }} xətadır"
+
+      # High Response Time / Yüksək Cavab Vaxtı
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "High response time detected"
+          summary_az: "Yüksək cavab vaxtı aşkar edildi"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.job }}"
+          description_az: "{{ $labels.job }} üçün 95-ci persentil cavab vaxtı {{ $value }}s-dir"
+
+      # Database Connection Issues / Veritabanı Bağlantı Problemləri
+      - alert: DatabaseConnectionIssues
+        expr: postgres_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Database connection failed"
+          summary_az: "Veritabanı bağlantısı uğursuz oldu"
+          description: "PostgreSQL database is not responding"
+          description_az: "PostgreSQL veritabanı cavab vermir"
+
+      # High Database Query Time / Yüksək Veritabanı Sorğu Vaxtı
+      - alert: HighDatabaseQueryTime
+        expr: postgres_stat_activity_max_tx_duration > 300
+        for: 2m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow database queries detected"
+          summary_az: "Yavaş veritabanı sorğuları aşkar edildi"
+          description: "Database query duration is {{ $value }}s"
+          description_az: "Veritabanı sorğu müddəti {{ $value }}s-dir"
+
+      # High Memory Usage / Yüksək Yaddaş İstifadəsi
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: "{{ $labels.instance }}"
+        annotations:
+          summary: "High memory usage detected"
+          summary_az: "Yüksək yaddaş istifadəsi aşkar edildi"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          description_az: "{{ $labels.instance }}-də yaddaş istifadəsi {{ $value | humanizePercentage }}-dir"
+
+      # High CPU Usage / Yüksək CPU İstifadəsi
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: "{{ $labels.instance }}"
+        annotations:
+          summary: "High CPU usage detected"
+          summary_az: "Yüksək CPU istifadəsi aşkar edildi"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+          description_az: "{{ $labels.instance }}-də CPU istifadəsi {{ $value }}%-dir"
+
+      # Disk Space Low / Disk Yeri Az
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: "{{ $labels.instance }}"
+        annotations:
+          summary: "Low disk space"
+          summary_az: "Disk yeri azdır"
+          description: "Disk space is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          description_az: "{{ $labels.instance }}-də disk yeri {{ $value | humanizePercentage }}-dir"
+
+      # Redis Connection Issues / Redis Bağlantı Problemləri
+      - alert: RedisConnectionIssues
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis connection failed"
+          summary_az: "Redis bağlantısı uğursuz oldu"
+          description: "Redis cache is not responding"
+          description_az: "Redis cache cavab vermir"
+
+      # High Redis Memory Usage / Yüksək Redis Yaddaş İstifadəsi
+      - alert: HighRedisMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 3m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis memory usage"
+          summary_az: "Yüksək Redis yaddaş istifadəsi"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+          description_az: "Redis yaddaş istifadəsi {{ $value | humanizePercentage }}-dir"
+
+      # Nginx High Error Rate / Nginx Yüksək Xəta Dərəcəsi
+      - alert: NginxHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "Nginx high error rate"
+          summary_az: "Nginx yüksək xəta dərəcəsi"
+          description: "Nginx error rate is {{ $value }} errors per second"
+          description_az: "Nginx xəta dərəcəsi saniyədə {{ $value }} xətadır"
+
+      # Service Down / Xidmət Söndü
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "Service is down"
+          summary_az: "Xidmət söndü"
+          description: "{{ $labels.job }} service is not responding"
+          description_az: "{{ $labels.job }} xidməti cavab vermir"
+
+      # High Request Rate / Yüksək Sorğu Dərəcəsi
+      - alert: HighRequestRate
+        expr: rate(http_requests_total[5m]) > 100
+        for: 3m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "High request rate detected"
+          summary_az: "Yüksək sorğu dərəcəsi aşkar edildi"
+          description: "Request rate is {{ $value }} requests per second for {{ $labels.job }}"
+          description_az: "{{ $labels.job }} üçün sorğu dərəcəsi saniyədə {{ $value }} sorğudur"
+
+      # Certificate Expiry / Sertifikat Müddəti
+      - alert: CertificateExpiry
+        expr: (ssl_cert_not_after - time()) / 86400 < 30
+        for: 0m
+        labels:
+          severity: warning
+          service: ssl
+        annotations:
+          summary: "SSL certificate expiring soon"
+          summary_az: "SSL sertifikatı tezliklə bitəcək"
+          description: "SSL certificate expires in {{ $value }} days"
+          description_az: "SSL sertifikatı {{ $value }} gün sonra bitəcək"
+
+      # Docker Container Restart / Docker Konteyner Yenidən Başlatma
+      - alert: DockerContainerRestart
+        expr: rate(docker_container_restart_count[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: docker
+        annotations:
+          summary: "Docker container restarting"
+          summary_az: "Docker konteyner yenidən başlayır"
+          description: "Container {{ $labels.name }} is restarting frequently"
+          description_az: "{{ $labels.name }} konteyneri tez-tez yenidən başlayır"
+
+      # Application Performance Degradation / Tətbiq Performansının Pisləşməsi
+      - alert: ApplicationPerformanceDegradation
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "Application performance degradation"
+          summary_az: "Tətbiq performansının pisləşməsi"
+          description: "99th percentile response time is {{ $value }}s for {{ $labels.job }}"
+          description_az: "{{ $labels.job }} üçün 99-cu persentil cavab vaxtı {{ $value }}s-dir"

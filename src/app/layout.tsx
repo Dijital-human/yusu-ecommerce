@@ -1,22 +1,31 @@
-import type { Metadata } from "next";
+/**
+ * Root Layout - Minimal wrapper for Next.js 15
+ * Next.js 15 requires <html> and <body> tags in root layout
+ * Next.js 15 root layout-da <html> və <body> tag-ləri tələb edir
+ * Note: Actual styling and locale-specific content is in [locale]/layout.tsx
+ * Qeyd: Faktiki styling və locale-ə xas məzmun [locale]/layout.tsx-dədir
+ */
 import "./globals.css";
-import { AuthProvider } from "@/components/providers/AuthProvider";
-import { CartProvider } from "@/store/CartContext";
+import type { Metadata, Viewport } from "next";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export const metadata: Metadata = {
-  title: "Azliner - Customer Platform",
-  description: "Reliable e-commerce platform for customers with quality products, fast delivery and secure payment.",
-  keywords: "ecommerce, online shopping, customer, products, delivery, secure payment",
-  authors: [{ name: "Azliner Customer Team" }],
-  verification: {
-    google: "4-KWiHdjRIvPfaqySQQcJqtdECwwbEmsP0QRoSg3cM0",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Yusu E-commerce",
   },
-  openGraph: {
-    title: "Azliner - Customer Platform",
-    description: "Quality products, fast delivery and secure payment.",
-    type: "website",
-    locale: "en_US",
-  },
+};
+
+// Viewport and themeColor must be exported separately in Next.js 15
+// Viewport və themeColor Next.js 15-də ayrıca export edilməlidir
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -24,14 +33,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Next.js 15 requires html and body tags in root layout
+  // Next.js 15 root layout-da html və body tag-ləri tələb edir
+  // The actual locale-specific layout is in [locale]/layout.tsx
+  // Faktiki locale-ə xas layout [locale]/layout.tsx-dədir
+  // Default lang="en" - will be overridden by [locale]/layout.tsx
+  // Default lang="en" - [locale]/layout.tsx tərəfindən override ediləcək
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased" suppressHydrationWarning>
-        <AuthProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </AuthProvider>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Yusu" />
+      </head>
+      <body className="font-sans antialiased" suppressHydrationWarning data-scroll-behavior="smooth">
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

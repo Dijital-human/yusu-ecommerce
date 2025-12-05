@@ -7,7 +7,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useCart } from "@/store/CartContext";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -18,21 +18,27 @@ import {
   Heart, 
   Eye,
   Package,
-  Truck
+  Truck,
+  Check
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { parseProductImages } from "@/lib/utils/product-helpers";
+import ProductQuickView from "./ProductQuickView";
+import { useTranslations } from "next-intl";
 
 interface ProductCardProps {
   product: {
     id: string;
     name: string;
     price: number;
-    images: string;
+    originalPrice?: number;
+    images: string | string[];
     averageRating?: number;
     reviewCount?: number;
     stock: number;
     seller?: {
       name: string;
+      isVerified?: boolean;
     };
     category?: {
       name: string;
@@ -52,6 +58,16 @@ export function ProductCard({
   const [isLoading, setIsLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const { addToCart, isInCart } = useCart();
+  const t = useTranslations("products");
+  const tCommon = useTranslations("common");
+
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  // Parse images to handle string, array, or JSON string formats
+  // Şəkilləri parse et - string, array və ya JSON string formatlarını idarə et
+  const parsedImages = parseProductImages(product.images);
+  const productImage = parsedImages[0] || '/placeholder-product.jpg';
 
   const handleAddToCart = async () => {
     setIsLoading(true);
@@ -81,99 +97,119 @@ export function ProductCard({
   };
 
   const isOutOfStock = product.stock === 0;
-  const discountPercentage = 0; // This would come from product data / Bu məhsul məlumatından gələcək
+  // Support optional originalPrice field if provided by backend
+  const discountPercentage = product.originalPrice && product.originalPrice > product.price
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
 
   return (
-    <Card className="group cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <div className="relative overflow-hidden">
-        {/* Product Image / Məhsul Şəkli */}
+    <Card className="group cursor-pointer hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-700 transform hover:-translate-y-2 bg-white dark:bg-gray-800">
+      <div className="relative overflow-hidden bg-white dark:bg-gray-800">
+        {/* Product Image / Məhsul Şəkli - Trendyol Style */}
         <Link href={`/products/${product.id}`}>
-          <div className="aspect-square relative">
-            <Image
-              src={product.images || "/placeholder-product.jpg"}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
+          <div className="aspect-square relative overflow-hidden">
+            {/* Image with shimmer until loaded / Yüklənənə qədər shimmer */}
+            {productImage && productImage !== '/placeholder-product.jpg' ? (
+              <>
+                <div className={`absolute inset-0 ${imgLoaded ? 'opacity-0' : ''}`}>
+                  <div className="w-full h-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 animate-shimmer" />
+                </div>
+                <Image
+                  src={productImage}
+                  alt={product.name || "Product image"}
+                  fill
+                  onLoad={() => setImgLoaded(true)}
+                  className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+              </>
+            ) : (
+              <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <Package className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+              </div>
+            )}
             
-            {/* Overlay on hover / Hover zamanı örtük */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300" />
+            {/* Gradient Overlay on hover / Hover zamanı gradient örtük */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/20 group-hover:via-black/10 group-hover:to-black/0 transition-all duration-500" />
           </div>
         </Link>
 
-        {/* Badges / Nişanlar */}
-        <div className="absolute top-2 left-2 flex flex-col space-y-1">
+        {/* Badges / Nişanlar - Trendyol Style */}
+        <div className="absolute top-3 left-3 flex flex-col space-y-2 z-10">
           {isOutOfStock && (
-            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-              Out of Stock / Stokda Yox
+            <span className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+              {t("outOfStock")}
             </span>
           )}
           {discountPercentage > 0 && (
-            <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+            <span className="bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse-slow">
               -{discountPercentage}%
             </span>
           )}
           {product.stock > 0 && product.stock < 10 && (
-            <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-              Limited Stock / Məhdud Stok
+            <span className="bg-yellow-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+              {t("limitedStock")}
             </span>
           )}
         </div>
 
-        {/* Action Buttons / Əməliyyat Düymələri */}
-        <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Action Buttons / Əməliyyat Düymələri - Trendyol Style */}
+        <div className="absolute top-3 right-3 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 bg-white/90 hover:bg-white"
+            className="h-10 w-10 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 shadow-lg hover:shadow-xl rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110"
             onClick={handleAddToWishlist}
+            aria-label={isInWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
           >
             <Heart 
-              className={`h-4 w-4 ${isInWishlist ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
+              className={`h-5 w-5 transition-all duration-300 ${isInWishlist ? 'text-red-500 fill-current animate-bounce-gentle' : 'text-gray-600 dark:text-gray-400 hover:text-red-500'}`} 
             />
           </Button>
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 bg-white/90 hover:bg-white"
-            onClick={handleQuickView}
+            className="h-10 w-10 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 shadow-lg hover:shadow-xl rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110"
+            onClick={() => {
+              if (onQuickView) return handleQuickView();
+              setIsQuickViewOpen(true);
+            }}
+            aria-label={`Quick view ${product.name}`}
           >
-            <Eye className="h-4 w-4 text-gray-600" />
+            <Eye className="h-5 w-5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" />
           </Button>
         </div>
       </div>
 
-      <CardContent className="p-4">
-        {/* Category / Kateqoriya */}
+      <CardContent className="p-5 bg-white dark:bg-gray-800">
+        {/* Category / Kateqoriya - Trendyol Style */}
         {product.category && (
-          <div className="text-xs text-gray-500 mb-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium">
             {product.category.name}
           </div>
         )}
 
-        {/* Product Name / Məhsul Adı */}
+        {/* Product Name / Məhsul Adı - Trendyol Style */}
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
+          <h3 className="font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-base leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400">
             {product.name}
           </h3>
         </Link>
 
-        {/* Rating / Reytinq */}
+        {/* Rating / Reytinq - Trendyol Style */}
         {product.averageRating && product.reviewCount && (
-          <div className="flex items-center mb-2">
-            <div className="flex items-center">
+          <div className="flex items-center mb-3">
+            <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-md">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${
-                    i < Math.floor(product.averageRating!) ? 'text-yellow-400' : 'text-gray-300'
+                  className={`h-3.5 w-3.5 ${
+                    i < Math.floor(product.averageRating!) ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'
                   }`}
-                  fill={i < Math.floor(product.averageRating!) ? 'currentColor' : 'none'}
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-500 ml-2">
+            <span className="text-xs text-gray-600 dark:text-gray-400 ml-2 font-medium">
               ({product.reviewCount})
             </span>
           </div>
@@ -181,68 +217,88 @@ export function ProductCard({
 
         {/* Seller Info / Satıcı Məlumatı */}
         {product.seller && (
-          <div className="flex items-center text-sm text-gray-600 mb-2">
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
             <Package className="h-4 w-4 mr-1" />
-            <span>{product.seller.name}</span>
+            <span className="mr-2">{product.seller.name}</span>
+            {product.seller.isVerified && (
+              <span className="flex items-center text-xs text-green-600 dark:text-green-400 font-medium" aria-hidden>
+                <Check className="h-3 w-3 mr-1" /> {t("verified")}
+              </span>
+            )}
           </div>
         )}
 
-        {/* Price / Qiymət */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-gray-900">
-              {formatCurrency(product.price)}
-            </span>
+        {/* Price / Qiymət - Trendyol Style */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-2">
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(product.price)}
+              </span>
+              {discountPercentage > 0 && product.originalPrice && (
+                <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                  {formatCurrency(product.originalPrice)}
+                </span>
+              )}
+            </div>
             {discountPercentage > 0 && (
-              <span className="text-sm text-gray-500 line-through">
-                {formatCurrency(product.price * (1 + discountPercentage / 100))}
+              <span className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">
+                {discountPercentage}% {t("off")}
               </span>
             )}
           </div>
           
           {/* Stock Indicator / Stok Göstəricisi */}
-          <div className="text-xs text-gray-500">
+          <div className="text-xs">
             {product.stock > 0 ? (
-              <span className="text-green-600">
-                {product.stock} in stock / Stokda var
+              <span className="text-green-600 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                {product.stock} {t("inStock")}
               </span>
             ) : (
-              <span className="text-red-600">
-                Out of stock / Stokda yox
+              <span className="text-red-600 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full">
+                {t("outOfStock")}
               </span>
             )}
           </div>
         </div>
 
-        {/* Add to Cart Button / Səbətə Əlavə Et Düyməsi */}
+        {/* Add to Cart Button / Səbətə Əlavə Et Düyməsi - Trendyol Style */}
         <Button
-          className="w-full"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 shadow-md hover:shadow-lg transition-all duration-300"
           disabled={isOutOfStock || isLoading}
           onClick={handleAddToCart}
+          aria-label={isOutOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
         >
           {isLoading ? (
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              Adding... / Əlavə edilir...
+              {t("adding")}
             </div>
           ) : isOutOfStock ? (
-            "Out of Stock / Stokda Yox"
+            t("outOfStock")
           ) : isInCart(product.id) ? (
-            "In Cart / Səbətdə"
+            <div className="flex items-center justify-center">
+              <Check className="h-4 w-4 mr-2" />
+              {t("inCart")}
+            </div>
           ) : (
             <>
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart / Səbətə Əlavə Et
+              {t("addToCart")}
             </>
           )}
         </Button>
 
         {/* Delivery Info / Çatdırılma Məlumatı */}
-        <div className="mt-2 flex items-center text-xs text-gray-500">
+        <div className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
           <Truck className="h-3 w-3 mr-1" />
-          <span>Free delivery / Pulsuz çatdırılma</span>
+          <span>{t("freeDelivery")}</span>
         </div>
       </CardContent>
+      {/* Quick view modal fallback (client-side) */}
+      {isQuickViewOpen && (
+        <ProductQuickView productId={product.id} onClose={() => setIsQuickViewOpen(false)} />
+      )}
     </Card>
   );
 }

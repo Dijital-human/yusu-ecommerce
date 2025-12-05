@@ -5,22 +5,24 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seeding... / Veritabanı seeding başlayır...');
-
+  
   // Create categories / Kateqoriyalar yarat
   console.log('📁 Creating categories... / Kateqoriyalar yaradılır...');
-  
-  const categories = await Promise.all([
+
+  await Promise.all([
     prisma.category.upsert({
       where: { id: '1' },
       update: {},
       create: {
         id: '1',
-        name: 'Electronics / Elektronika',
+        name: 'Electronics / Elektronika', 
         description: 'Electronic devices and gadgets / Elektron cihazlar və qadjetlər',
         image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop',
         isActive: true,
@@ -127,89 +129,207 @@ async function main() {
     }),
   ]);
 
+  const categories = await prisma.category.findMany();
   console.log(`✅ Created ${categories.length} categories / ${categories.length} kateqoriya yaradıldı`);
+
+  // Create sellers / Satıcıları yarat
+  console.log('👥 Creating sellers... / Satıcılar yaradılır...');
+  
+  const mainSeller = await prisma.user.upsert({
+    where: { email: 'seller@example.com' },
+    update: {},
+    create: {
+      email: 'seller@example.com',
+      name: 'Demo Store',
+      role: 'SELLER',
+    },
+  });
+
+  // Create demo products / Demo məhsullar yarat
+  console.log('📦 Creating demo products... / Demo məhsullar yaradılır...');
+
+  const demoProducts = await Promise.all([
+    prisma.product.upsert({
+      where: { id: 'iphone15' },
+      update: {},
+      create: {
+        id: 'iphone15',
+        name: 'iPhone 15 Pro Max',
+        description: 'The latest iPhone with advanced camera system / Təkmilləşdirilmiş kamera sistemi ilə ən son iPhone',
+        price: 2499.99,
+        originalPrice: 2699.99,
+        images: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400',
+        stock: 50,
+        categoryId: '1',
+        sellerId: mainSeller.id,
+        isApproved: true,
+        isPublished: true,
+        publishedAt: new Date(),
+        approvedAt: new Date()
+      },
+    }),
+    prisma.product.upsert({
+      where: { id: 'galaxys23' },
+      update: {},
+      create: {
+        id: 'galaxys23',
+        name: 'Samsung Galaxy S23 Ultra',
+        description: 'Powerful Android flagship with S Pen / S Pen ilə güclü Android flagship',
+        price: 1899.99,
+        originalPrice: 1999.99,
+        images: 'https://images.unsplash.com/photo-1675785931243-20c3b994de02?w=400',
+        stock: 30,
+        categoryId: '1',
+        sellerId: mainSeller.id,
+        isApproved: true,
+        isPublished: true,
+        publishedAt: new Date(),
+        approvedAt: new Date()
+      },
+    }),
+    prisma.product.upsert({
+      where: { id: 'macbook' },
+      update: {},
+      create: {
+        id: 'macbook',
+        name: 'MacBook Pro M3 Max',
+        description: 'Most powerful MacBook ever / Ən güclü MacBook',
+        price: 3499.99,
+        originalPrice: 3699.99,
+        images: 'https://images.unsplash.com/photo-1695048091025-544c296167a3?w=400',
+        stock: 15,
+        categoryId: '1',
+        sellerId: mainSeller.id,
+        isApproved: true,
+        isPublished: true,
+        publishedAt: new Date(),
+        approvedAt: new Date()
+      },
+    }),
+    prisma.product.upsert({
+      where: { id: 'nike-air' },
+      update: {},
+      create: {
+        id: 'nike-air',
+        name: 'Nike Air Max 2025',
+        description: 'Premium comfort and style / Premium rahatlıq və stil',
+        price: 219.99,
+        originalPrice: 249.99,
+        images: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+        stock: 100,
+        categoryId: '4',
+        sellerId: mainSeller.id,
+        isApproved: true,
+        isPublished: true,
+        publishedAt: new Date(),
+        approvedAt: new Date()
+      },
+    })
+  ]);
 
   // Create admin user / Admin istifadəçi yarat
   console.log('👑 Creating admin user... / Admin istifadəçi yaradılır...');
   
+  const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@azliner.info' },
+    where: { email: 'admin@ulustore.com' },
     update: {},
     create: {
       id: 'admin-1',
-      email: 'admin@azliner.info',
+      email: 'admin@ulustore.com',
       name: 'Admin User',
       role: 'ADMIN',
       phone: '+994501234567',
       isActive: true,
+      passwordHash: adminPasswordHash,
     },
   });
 
   console.log('✅ Admin user created / Admin istifadəçi yaradıldı');
+  console.log('   📧 Email: admin@ulustore.com');
+  console.log('   🔑 Password: admin123');
 
   // Create seller users / Satıcı istifadəçilər yarat
   console.log('🏪 Creating seller users... / Satıcı istifadəçilər yaradılır...');
   
+  const sellerPasswordHash = await bcrypt.hash('seller123', 10);
   const sellers = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'seller1@azliner.info' },
+      where: { email: 'seller1@ulustore.com' },
       update: {},
       create: {
         id: 'seller-1',
-        email: 'seller1@azliner.info',
+        email: 'seller1@ulustore.com',
         name: 'Tech Gadgets Inc.',
         role: 'SELLER',
         phone: '+994501234568',
         isActive: true,
+        passwordHash: sellerPasswordHash,
+        isApproved: true,
+        approvedAt: new Date(),
       },
     }),
     prisma.user.upsert({
-      where: { email: 'seller2@azliner.info' },
+      where: { email: 'seller2@ulustore.com' },
       update: {},
       create: {
         id: 'seller-2',
-        email: 'seller2@azliner.info',
+        email: 'seller2@ulustore.com',
         name: 'Style Haven Boutique',
         role: 'SELLER',
         phone: '+994501234569',
         isActive: true,
+        passwordHash: sellerPasswordHash,
+        isApproved: true,
+        approvedAt: new Date(),
       },
     }),
   ]);
 
   console.log(`✅ Created ${sellers.length} sellers / ${sellers.length} satıcı yaradıldı`);
+  console.log('   📧 Seller 1: seller1@ulustore.com (Password: seller123)');
+  console.log('   📧 Seller 2: seller2@ulustore.com (Password: seller123)');
 
   // Create courier users / Kuryer istifadəçilər yarat
   console.log('🚚 Creating courier users... / Kuryer istifadəçilər yaradılır...');
   
+  const courierPasswordHash = await bcrypt.hash('courier123', 10);
   const couriers = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'courier1@azliner.info' },
+      where: { email: 'courier1@ulustore.com' },
       update: {},
       create: {
         id: 'courier-1',
-        email: 'courier1@azliner.info',
+        email: 'courier1@ulustore.com',
         name: 'Fast Delivery John',
         role: 'COURIER',
         phone: '+994501234570',
         isActive: true,
+        passwordHash: courierPasswordHash,
+        isApproved: true,
+        approvedAt: new Date(),
       },
     }),
     prisma.user.upsert({
-      where: { email: 'courier2@azliner.info' },
+      where: { email: 'courier2@ulustore.com' },
       update: {},
       create: {
         id: 'courier-2',
-        email: 'courier2@azliner.info',
+        email: 'courier2@ulustore.com',
         name: 'Swift Ship Jane',
         role: 'COURIER',
         phone: '+994501234571',
         isActive: true,
+        passwordHash: courierPasswordHash,
+        isApproved: true,
+        approvedAt: new Date(),
       },
     }),
   ]);
 
   console.log(`✅ Created ${couriers.length} couriers / ${couriers.length} kuryer yaradıldı`);
+  console.log('   📧 Courier 1: courier1@ulustore.com (Password: courier123)');
+  console.log('   📧 Courier 2: courier2@ulustore.com (Password: courier123)');
 
   // Create sample products / Nümunə məhsullar yarat
   console.log('📦 Creating sample products... / Nümunə məhsullar yaradılır...');
@@ -573,16 +693,56 @@ async function main() {
     });
   }
 
-  console.log(`✅ Created ${reviews.length} reviews / ${reviews.length} rəy yaradıldı`);
+  // Create test customer users / Test müştəri istifadəçilər yarat
+  console.log('👥 Creating test customer users... / Test müştəri istifadəçilər yaradılır...');
+  
+  const customerPasswordHash = await bcrypt.hash('customer123', 10);
+  const customers = await Promise.all([
+    prisma.user.upsert({
+      where: { email: 'customer1@ulustore.com' },
+      update: {},
+      create: {
+        id: 'customer-1',
+        email: 'customer1@ulustore.com',
+        name: 'Kənan Mustafazadə',
+        role: 'CUSTOMER',
+        phone: '+994501234571',
+        isActive: true,
+        passwordHash: customerPasswordHash,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: 'customer2@ulustore.com' },
+      update: {},
+      create: {
+        id: 'customer-2',
+        email: 'customer2@ulustore.com',
+        name: 'Test Customer',
+        role: 'CUSTOMER',
+        phone: '+994501234572',
+        isActive: true,
+        passwordHash: customerPasswordHash,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${customers.length} test customers / ${customers.length} test müştəri yaradıldı`);
+  console.log('   📧 Customer 1: customer1@ulustore.com (Password: customer123)');
+  console.log('   📧 Customer 2: customer2@ulustore.com (Password: customer123)');
 
   console.log('🎉 Database seeding completed! / Veritabanı seeding tamamlandı!');
-  console.log('\n📋 Created accounts / Yaradılan hesablar:');
-  console.log('👑 Admin: admin@azliner.info');
-  console.log('🏪 Seller 1: seller1@azliner.info');
-  console.log('🏪 Seller 2: seller2@azliner.info');
-  console.log('🚚 Courier 1: courier1@azliner.info');
-  console.log('🚚 Courier 2: courier2@azliner.info');
-  console.log('\n💡 Note: Use OAuth providers for authentication / Qeyd: Autentifikasiya üçün OAuth provider-ları istifadə edin');
+  console.log('\n📋 Created entries / Yaradılan məlumatlar:');
+  console.log('🏪 Demo Seller: seller@example.com');
+  console.log('📦 Demo Products: iPhone 15, Galaxy S23, MacBook Pro, Nike Air Max');
+  console.log('\n🔐 Test Accounts / Test Hesabları:');
+  console.log('   👑 Admin: admin@ulustore.com (Password: admin123)');
+  console.log('   🏪 Seller 1: seller1@ulustore.com (Password: seller123)');
+  console.log('   🏪 Seller 2: seller2@ulustore.com (Password: seller123)');
+  console.log('   🚚 Courier 1: courier1@ulustore.com (Password: courier123)');
+  console.log('   🚚 Courier 2: courier2@ulustore.com (Password: courier123)');
+  console.log('   👥 Customer 1: customer1@ulustore.com (Password: customer123)');
+  console.log('   👥 Customer 2: customer2@ulustore.com (Password: customer123)');
+  console.log('\n💡 Note: All passwords are hashed with bcrypt / Qeyd: Bütün parollar bcrypt ilə hash olunub');
 }
 
 main()

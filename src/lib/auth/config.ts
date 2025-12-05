@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   
   // Secret key / Gizli açar
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key-minimum-32-characters-needed",
   
   // Session strategy / Sessiya strategiyası
   session: {
@@ -85,25 +85,72 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         try {
-          if (!credentials?.email) {
+          if (!credentials?.email || !credentials?.password) {
+            console.log("❌ [Auth] Missing credentials");
             return null;
           }
           
-          const { email } = credentials;
+          const { email, password } = credentials;
+          const normalizedEmail = email.toLowerCase().trim();
+          
+          console.log("🔍 [Auth] Attempting login for:", normalizedEmail);
           
           // Find user in database / Veritabanında istifadəçini tap
           const user = await prisma.user.findUnique({
-            where: { email },
+            where: { email: normalizedEmail },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              role: true,
+              isActive: true,
+              passwordHash: true,
+            },
           });
           
-          if (!user || !user.isActive) {
+          if (!user) {
+            console.log("❌ [Auth] User not found:", normalizedEmail);
             return null;
           }
           
-          // For test purposes, allow login with any email / Test məqsədləri üçün hər hansı email ilə girişə icazə ver
+          if (!user.isActive) {
+            console.log("❌ [Auth] User is inactive:", normalizedEmail);
+            return null;
+          }
+          
+          // Check password / Şifrəni yoxla
+          if (!user.passwordHash) {
+            console.log("❌ [Auth] User has no password hash:", normalizedEmail);
+            return null;
+          }
+          
+          const isValidPassword = await compare(password, user.passwordHash);
+          if (!isValidPassword) {
+            console.log("❌ [Auth] Invalid password for:", normalizedEmail);
+            return null;
+          }
+
+          // Check email verification in production / Production-da email təsdiqini yoxla
+          // Note: For development, we allow unverified emails / Qeyd: Development üçün təsdiqlənməmiş email-lərə icazə veririk
+          if (process.env.NODE_ENV === 'production' && process.env.REQUIRE_EMAIL_VERIFICATION === 'true') {
+            const userWithVerification = await prisma.user.findUnique({
+              where: { email: normalizedEmail },
+              select: { emailVerified: true },
+            });
+            
+            if (!userWithVerification?.emailVerified) {
+              console.log("❌ [Auth] Email not verified:", normalizedEmail);
+              return null;
+            }
+          }
+          
+          console.log("✅ [Auth] User authenticated successfully:", normalizedEmail);
+          
           return {
             id: user.id,
             email: user.email,
@@ -112,7 +159,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           };
         } catch (error) {
-          console.error("Authorization error:", error);
+          console.error("❌ [Auth] Authorization error:", error);
           return null;
         }
       },

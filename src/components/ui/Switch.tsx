@@ -43,8 +43,8 @@ export function Switch({
       disabled={disabled}
       className={`
         relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-        focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2
-        ${isChecked ? 'bg-orange-500' : 'bg-gray-200'}
+        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+        ${isChecked ? 'bg-primary-500' : 'bg-gray-200'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}
       `}

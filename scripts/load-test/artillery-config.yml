@@ -1,0 +1,114 @@
+# Artillery Load Testing Configuration / Artillery Yükləmə Test Konfiqurasiyası
+# Load testing configuration for Ulustore API
+# Ulustore API üçün yükləmə test konfiqurasiyası
+#
+# Usage / İstifadə:
+#   artillery run scripts/load-test/artillery-config.yml
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    # Warm-up phase / İstiləşmə fazası
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm-up"
+    # Ramp-up phase / Artım fazası
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 50
+      name: "Ramp-up"
+    # Sustained load phase / Davamlı yükləmə fazası
+    - duration: 120
+      arrivalRate: 50
+      name: "Sustained load"
+    # Spike phase / Spik fazası
+    - duration: 30
+      arrivalRate: 100
+      name: "Spike"
+    # Cool-down phase / Sərinləmə fazası
+    - duration: 30
+      arrivalRate: 10
+      name: "Cool-down"
+  processor: "./artillery-processor.js"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      stripQueryString: true
+
+scenarios:
+  # Products browsing scenario / Məhsul baxış ssenarisi
+  - name: "Browse Products"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/v1/products"
+          qs:
+            page: "{{ $randomInt(1, 10) }}"
+            limit: 12
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: success
+            - hasProperty: data
+      - think: 2
+      - get:
+          url: "/api/v1/categories"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      - think: 1
+
+  # Search scenario / Axtarış ssenarisi
+  - name: "Search Products"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/search"
+          qs:
+            q: "{{ $randomString() }}"
+            page: 1
+            limit: 12
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: success
+      - think: 2
+
+  # Health check scenario / Sağlamlıq yoxlaması ssenarisi
+  - name: "Health Check"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/health"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: status
+      - think: 1
+
+  # Product details scenario / Məhsul detalları ssenarisi
+  - name: "Product Details"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/v1/products"
+          qs:
+            page: 1
+            limit: 12
+          capture:
+            - json: "$.data[0].id"
+              as: "productId"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/api/v1/products/{{ productId }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: success
+      - think: 2
+

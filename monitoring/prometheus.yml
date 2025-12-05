@@ -1,0 +1,114 @@
+# Prometheus Configuration / Prometheus Konfiqurasiyası
+# Comprehensive monitoring setup / Hərtərəfli monitorinq quraşdırması
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'yusu-production'
+    environment: 'production'
+
+# Alerting rules / Xəbərdarlıq qaydaları
+rule_files:
+  - "alert_rules.yml"
+
+# Alertmanager configuration / Alertmanager konfiqurasiyası
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Scrape configurations / Skrap konfiqurasiyaları
+scrape_configs:
+  # Prometheus itself / Prometheus özü
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Node Exporter / Node Exporter
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # PostgreSQL Exporter / PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # Redis Exporter / Redis Exporter
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # Nginx Exporter / Nginx Exporter
+  - job_name: 'nginx-exporter'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # Main E-commerce Application / Əsas E-ticarət Tətbiqi
+  - job_name: 'yusu-ecommerce'
+    static_configs:
+      - targets: ['yusu_ecommerce_prod:3000']
+    scrape_interval: 15s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+
+  # Admin Dashboard / Admin Dashboard
+  - job_name: 'yusu-admin'
+    static_configs:
+      - targets: ['yusu_admin_prod:3000']
+    scrape_interval: 15s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+
+  # Seller Dashboard / Satıcı Dashboard
+  - job_name: 'yusu-seller'
+    static_configs:
+      - targets: ['yusu_seller_prod:3000']
+    scrape_interval: 15s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+
+  # Courier Dashboard / Kuryer Dashboard
+  - job_name: 'yusu-courier'
+    static_configs:
+      - targets: ['yusu_courier_prod:3000']
+    scrape_interval: 15s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+
+  # Nginx / Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:80']
+    scrape_interval: 10s
+    metrics_path: /nginx_status
+    scrape_timeout: 5s
+
+  # Docker Containers / Docker Konteynerlər
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-exporter:9323']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Custom Application Metrics / Xüsusi Tətbiq Metrikaları
+  - job_name: 'yusu-custom-metrics'
+    static_configs:
+      - targets: ['yusu_ecommerce_prod:3000']
+    scrape_interval: 30s
+    metrics_path: /api/custom-metrics
+    scrape_timeout: 15s
+    params:
+      format: ['prometheus']

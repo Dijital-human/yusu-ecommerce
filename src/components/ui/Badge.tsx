@@ -1,34 +1,8 @@
-import { cn } from "@/lib/utils";
+/**
+ * Badge Component / Badge Komponenti
+ * Re-exports Badge from @yusu/ui-components for backward compatibility
+ * Geri uyğunluq üçün @yusu/ui-components-dən Badge-i yenidən export edir
+ */
 
-interface BadgeProps {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "default" | "secondary" | "destructive" | "outline";
-}
-
-export function Badge({ 
-  children, 
-  className, 
-  variant = "default" 
-}: BadgeProps) {
-  const baseClasses = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
-  
-  const variantClasses = {
-    default: "bg-blue-100 text-blue-800",
-    secondary: "bg-gray-100 text-gray-800",
-    destructive: "bg-red-100 text-red-800",
-    outline: "border border-gray-200 text-gray-800",
-  };
-
-  return (
-    <span
-      className={cn(
-        baseClasses,
-        variantClasses[variant],
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
-}
+export { Badge } from '@yusu/ui-components';
+export type { BadgeProps } from '@yusu/ui-components';

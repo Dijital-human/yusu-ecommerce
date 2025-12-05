@@ -1,0 +1,71 @@
+# Production Dockerfile / Production Dockerfile
+# Multi-stage build for optimized production image / Optimallaşdırılmış production image üçün multi-stage build
+
+# Stage 1: Build Stage / Build Mərhələsi
+FROM node:18-alpine AS builder
+
+# Set working directory / İş qovluğunu təyin et
+WORKDIR /app
+
+# Copy package files / Package fayllarını kopyala
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install dependencies / Asılılıqları quraşdır
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code / Mənbə kodunu kopyala
+COPY . .
+
+# Generate Prisma client / Prisma client yarat
+RUN npx prisma generate
+
+# Build the application / Tətbiqi build et
+RUN npm run build
+
+# Stage 2: Production Stage / Production Mərhələsi
+FROM node:18-alpine AS production
+
+# Install dumb-init for proper signal handling / Düzgün siqnal idarəetməsi üçün dumb-init quraşdır
+RUN apk add --no-cache dumb-init
+
+# Create app user for security / Təhlükəsizlik üçün app istifadəçisi yarat
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Set working directory / İş qovluğunu təyin et
+WORKDIR /app
+
+# Copy package files / Package fayllarını kopyala
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install only production dependencies / Yalnız production asılılıqlarını quraşdır
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built application from builder stage / Builder mərhələsindən build edilmiş tətbiqi kopyala
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Create necessary directories / Lazımı qovluqları yarat
+RUN mkdir -p /app/logs /app/uploads && chown -R nextjs:nodejs /app
+
+# Switch to non-root user / Root olmayan istifadəçiyə keç
+USER nextjs
+
+# Expose port / Port aç
+EXPOSE 3000
+
+# Set environment variables / Environment dəyişənlərini təyin et
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Health check / Sağlamlıq yoxlaması
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js
+
+# Start the application / Tətbiqi başlat
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server.js"]

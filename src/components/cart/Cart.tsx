@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useCart } from "@/store/CartContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -25,6 +25,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface CartProps {
   onClose?: () => void;
@@ -33,6 +34,8 @@ interface CartProps {
 
 export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
   const { state, updateQuantity, removeFromCart, clearCart } = useCart();
+  const t = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
@@ -56,7 +59,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
   };
 
   const handleClearCart = async () => {
-    if (confirm("Are you sure you want to clear the cart? / Səbəti təmizləmək istədiyinizə əminsiniz?")) {
+    if (confirm(t("clearCartConfirm") || "Are you sure you want to clear the cart?")) {
       await clearCart();
     }
   };
@@ -66,7 +69,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading cart... / Səbət yüklənir...</p>
+          <p className="text-gray-600">{tCommon("loading")}...</p>
         </div>
       </div>
     );
@@ -88,14 +91,14 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
           <ShoppingCart className="w-12 h-12 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Your cart is empty / Səbətiniz boşdur
+          {t("empty")}
         </h3>
         <p className="text-gray-600 mb-4">
-          Add some products to get started / Başlamaq üçün bəzi məhsullar əlavə edin
+          {t("emptyDesc")}
         </p>
         <Link href="/products">
           <Button onClick={onClose}>
-            Continue Shopping / Alış-verişə Davam Et
+            {t("continueShopping")}
           </Button>
         </Link>
       </div>
@@ -109,10 +112,10 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
         <div className="flex items-center space-x-2">
           <ShoppingCart className="h-6 w-6 text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-900">
-            Shopping Cart / Alış-veriş Səbəti
+            {t("title")}
           </h2>
           <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-full">
-            {state.totalItems} {state.totalItems === 1 ? 'item' : 'items'} / {state.totalItems === 1 ? 'element' : 'element'}
+            {state.totalItems} {state.totalItems === 1 ? t("item") : t("items")}
           </span>
         </div>
         
@@ -161,7 +164,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
                       {formatCurrency(item.product.price)}
                     </span>
                     <span className="text-sm text-gray-500 ml-2">
-                      each / hər biri
+                      {t("each")}
                     </span>
                   </div>
                 </div>
@@ -223,7 +226,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
               {item.quantity > item.product.stock && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-800">
-                    Only {item.product.stock} items available in stock / Stokda yalnız {item.product.stock} element var
+                    {t("stockWarning", { stock: item.product.stock })}
                   </p>
                 </div>
               )}
@@ -237,32 +240,32 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Package className="h-5 w-5" />
-            <span>Order Summary / Sifariş Xülasəsi</span>
+            <span>{t("orderSummary")}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Subtotal / Alt Cəm */}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Subtotal / Alt Cəm</span>
+            <span className="text-gray-600">{t("subtotal")}</span>
             <span className="font-medium">{formatCurrency(state.totalPrice)}</span>
           </div>
 
           {/* Shipping / Çatdırılma */}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Shipping / Çatdırılma</span>
-            <span className="font-medium text-green-600">Free / Pulsuz</span>
+            <span className="text-gray-600">{t("shipping")}</span>
+            <span className="font-medium text-green-600">{t("free")}</span>
           </div>
 
           {/* Tax / Vergi */}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Tax / Vergi</span>
+            <span className="text-gray-600">{t("tax")}</span>
             <span className="font-medium">$0.00</span>
           </div>
 
           {/* Divider / Ayırıcı */}
           <div className="border-t pt-4">
             <div className="flex justify-between text-lg font-semibold">
-              <span>Total / Cəmi</span>
+              <span>{t("total")}</span>
               <span>{formatCurrency(state.totalPrice)}</span>
             </div>
           </div>
@@ -273,7 +276,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
               <Link href="/checkout" className="block">
                 <Button className="w-full" size="lg" onClick={onClose}>
                   <CreditCard className="h-5 w-5 mr-2" />
-                  Proceed to Checkout / Ödənişə Keç
+                  {t("proceedToCheckout")}
                 </Button>
               </Link>
             )}
@@ -284,7 +287,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
               onClick={handleClearCart}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Clear Cart / Səbəti Təmizlə
+              {t("clearCart")}
             </Button>
           </div>
 
@@ -292,7 +295,7 @@ export function Cart({ onClose, showCheckoutButton = true }: CartProps) {
           <div className="bg-blue-50 p-3 rounded-md">
             <div className="flex items-center space-x-2 text-blue-800">
               <Truck className="h-4 w-4" />
-              <span className="text-sm font-medium">Free delivery on orders over $50 / $50-dan yuxarı sifarişlərdə pulsuz çatdırılma</span>
+              <span className="text-sm font-medium">{t("freeDelivery")}</span>
             </div>
           </div>
         </CardContent>

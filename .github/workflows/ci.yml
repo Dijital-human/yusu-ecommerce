@@ -1,0 +1,218 @@
+# CI/CD Pipeline for Yusu E-commerce / Yusu E-ticarət üçün CI/CD Pipeline
+# This workflow runs tests, builds, and deploys the application
+# Bu workflow testləri işə salır, build edir və tətbiqi deploy edir
+
+name: CI/CD Pipeline / CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '22.x'
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+
+jobs:
+  # Test Job / Test İşi
+  test:
+    name: Run Tests / Testləri İşə Sal
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Run linting / Linting işə sal
+        run: npm run lint
+
+      - name: Run tests / Testləri işə sal
+        run: npm run test:ci
+
+      - name: Upload coverage to Codecov / Coverage-u Codecov-a yüklə
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  # Build Job / Build İşi
+  build:
+    name: Build Application / Tətbiqi Build Et
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Build application / Tətbiqi build et
+        run: npm run build
+
+      - name: Upload build artifacts / Build artifact-larını yüklə
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: |
+            .next/
+            public/
+            package.json
+            package-lock.json
+
+  # Database Migration Job / Veritabanı Migration İşi
+  migrate:
+    name: Database Migration / Veritabanı Migration
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Run database migrations / Veritabanı migration-larını işə sal
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  # Deploy to Vercel Job / Vercel-ə Deploy İşi
+  deploy:
+    name: Deploy to Vercel / Vercel-ə Deploy Et
+    runs-on: ubuntu-latest
+    needs: [build, migrate]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Deploy to Vercel / Vercel-ə deploy et
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+
+  # Security Scan Job / Təhlükəsizlik Scan İşi
+  security:
+    name: Security Scan / Təhlükəsizlik Scan
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Run security audit / Təhlükəsizlik audit-i işə sal
+        run: npm audit --audit-level=moderate
+
+      - name: Run Snyk security scan / Snyk təhlükəsizlik scan-i işə sal
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  # Performance Test Job / Performans Test İşi
+  performance:
+    name: Performance Tests / Performans Testləri
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code / Kod yoxla
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js / Node.js quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies / Asılılıqları quraşdır
+        run: npm ci
+
+      - name: Build application / Tətbiqi build et
+        run: npm run build
+
+      - name: Start application / Tətbiqi başlat
+        run: |
+          npm start &
+          sleep 10
+
+      - name: Run Lighthouse CI / Lighthouse CI işə sal
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouse.config.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # Notification Job / Bildiriş İşi
+  notify:
+    name: Send Notifications / Bildirişlər Göndər
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy]
+    if: always()
+    
+    steps:
+      - name: Notify on success / Uğurda bildir
+        if: ${{ needs.deploy.result == 'success' }}
+        run: |
+          echo "✅ Deployment successful! / Deploy uğurlu!"
+          echo "🚀 Application deployed to production / Tətbiq production-a deploy edildi"
+
+      - name: Notify on failure / Uğursuzluqda bildir
+        if: ${{ needs.deploy.result == 'failure' }}
+        run: |
+          echo "❌ Deployment failed! / Deploy uğursuz!"
+          echo "🔧 Please check the logs / Logları yoxlayın"

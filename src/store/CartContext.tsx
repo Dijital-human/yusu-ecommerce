@@ -75,9 +75,39 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { ...state, error: action.payload, isLoading: false };
 
     case "SET_CART":
-      const items = action.payload;
-      const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-      const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      // Ensure payload is an array / Payload-in array olduğunu təmin et
+      let items: CartItem[] = [];
+      
+      if (Array.isArray(action.payload)) {
+        items = action.payload;
+      } else if (action.payload && typeof action.payload === 'object' && 'items' in action.payload) {
+        const payloadObj = action.payload as { items?: CartItem[] };
+        if (Array.isArray(payloadObj.items)) {
+          items = payloadObj.items;
+        }
+      }
+      
+      // Validate items array / Items array-ini yoxla
+      if (!Array.isArray(items)) {
+        console.error('SET_CART: payload is not an array / SET_CART: payload array deyil', action.payload);
+        return {
+          ...state,
+          items: [],
+          totalItems: 0,
+          totalPrice: 0,
+          isLoading: false,
+          error: "Invalid cart data format / Yanlış səbət məlumat formatı",
+        };
+      }
+      
+      const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+      const totalPrice = items.reduce((sum, item) => {
+        // Get price from product object / Məhsul obyektindən qiyməti al
+        const price = item.product?.price 
+          ? (typeof item.product.price === 'number' ? item.product.price : parseFloat(String(item.product.price)) || 0)
+          : 0;
+        return sum + (price * (item.quantity || 0));
+      }, 0);
       return {
         ...state,
         items,
@@ -171,15 +201,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       dispatch({ type: "SET_LOADING", payload: true });
+      // Use /api/cart endpoint / /api/cart endpoint istifadə et
       const response = await fetch("/api/cart");
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
       if (data.success) {
-        dispatch({ type: "SET_CART", payload: data.data });
+        // Handle both array and object formats / Həm array həm də obyekt formatlarını idarə et
+        const cartItems = Array.isArray(data.data) 
+          ? data.data 
+          : (data.data?.items && Array.isArray(data.data.items))
+            ? data.data.items
+            : [];
+        
+        dispatch({ type: "SET_CART", payload: cartItems });
       } else {
-        dispatch({ type: "SET_ERROR", payload: data.error });
+        dispatch({ type: "SET_ERROR", payload: data.error || "Failed to fetch cart / Səbəti əldə etmək uğursuz" });
       }
     } catch (error) {
+      console.error('Error fetching cart / Səbəti almaq xətası:', error);
       dispatch({ type: "SET_ERROR", payload: "Failed to fetch cart / Səbəti əldə etmək uğursuz" });
     }
   };

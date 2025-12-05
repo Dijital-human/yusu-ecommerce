@@ -1,0 +1,885 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Ulustore E-commerce API",
+    "version": "1.0.0",
+    "description": "API documentation for Ulustore E-commerce Platform. This API allows customers to browse products, manage cart, place orders, and more. / Ulustore E-ticarət Platforması üçün API sənədləşməsi. Bu API müştərilərə məhsullara baxmaq, səbəti idarə etmək, sifariş vermək və daha çoxunu təmin edir.",
+    "contact": {
+      "name": "Ulustore Support",
+      "email": "support@ulustore.com",
+      "url": "https://ulustore.com/support"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://ulustore.com/license"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://ulustore.com/api",
+      "description": "Production server / Production server"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server / Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Products",
+      "description": "Product management endpoints / Məhsul idarəetmə endpoint-ləri"
+    },
+    {
+      "name": "Cart",
+      "description": "Shopping cart operations / Alış-veriş səbəti əməliyyatları"
+    },
+    {
+      "name": "Orders",
+      "description": "Order management endpoints / Sifariş idarəetmə endpoint-ləri"
+    },
+    {
+      "name": "Categories",
+      "description": "Category endpoints / Kateqoriya endpoint-ləri"
+    },
+    {
+      "name": "Search",
+      "description": "Search and filtering endpoints / Axtarış və filtrləmə endpoint-ləri"
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentication endpoints / Autentifikasiya endpoint-ləri"
+    },
+    {
+      "name": "Shipping",
+      "description": "Shipping rate calculation / Çatdırılma tarifi hesablama"
+    },
+    {
+      "name": "Health",
+      "description": "Health check endpoints / Sağlamlıq yoxlaması endpoint-ləri"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "next-auth.session-token",
+        "description": "NextAuth.js session token / NextAuth.js sessiya tokeni"
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Product ID / Məhsul ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name / Məhsul adı"
+          },
+          "description": {
+            "type": "string",
+            "description": "Product description / Məhsul təsviri"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Product price / Məhsul qiyməti"
+          },
+          "images": {
+            "type": "string",
+            "description": "Product images (comma-separated URLs) / Məhsul şəkilləri (vergüllə ayrılmış URL-lər)"
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "Category ID / Kateqoriya ID"
+          },
+          "sellerId": {
+            "type": "string",
+            "description": "Seller ID / Satıcı ID"
+          },
+          "stock": {
+            "type": "integer",
+            "description": "Available stock / Mövcud stok"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Product active status / Məhsul aktiv statusu"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "name", "price"]
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": ["productId", "quantity"]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "PENDING_PAYMENT", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED", "PAYMENT_FAILED"]
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message / Xəta mesajı"
+          },
+          "message": {
+            "type": "string",
+            "description": "Detailed error message / Ətraflı xəta mesajı"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer"
+          },
+          "pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/products": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get all products / Bütün məhsulları əldə et",
+        "description": "Retrieve a paginated list of products with optional filtering / İstəyə bağlı filtrləmə ilə səhifələnmiş məhsul siyahısını əldə et",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number / Səhifə nömrəsi"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 12
+            },
+            "description": "Items per page / Səhifədə element sayı"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by category ID / Kateqoriya ID-yə görə filtrlə"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search term / Axtarış termini"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["createdAt", "price", "name"],
+              "default": "createdAt"
+            },
+            "description": "Sort field / Sıralama sahəsi"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order / Sıralama sırası"
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Minimum price / Minimum qiymət"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Maximum price / Maksimum qiymət"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response / Uğurlu cavab",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error / Server xətası",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Products"],
+        "summary": "Create new product / Yeni məhsul yarat",
+        "description": "Create a new product (Seller only) / Yeni məhsul yarat (Yalnız satıcı)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "price", "categoryId"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "images": {
+                    "type": "string"
+                  },
+                  "categoryId": {
+                    "type": "string"
+                  },
+                  "stock": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created / Məhsul yaradıldı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Product"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request / Yanlış sorğu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized / Yetkisiz"
+          },
+          "403": {
+            "description": "Forbidden - Seller role required / Qadağan - Satıcı rolu tələb olunur"
+          }
+        }
+      }
+    },
+    "/v1/products/{id}": {
+      "get": {
+        "tags": ["Products"],
+        "summary": "Get product by ID / ID-yə görə məhsul əldə et",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found / Məhsul tapıldı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Product"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found / Məhsul tapılmadı"
+          }
+        }
+      }
+    },
+    "/v1/cart": {
+      "get": {
+        "tags": ["Cart"],
+        "summary": "Get user's cart / İstifadəçinin səbətini al",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart retrieved / Səbət əldə edildi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CartItem"
+                          }
+                        },
+                        "total": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized / Yetkisiz"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Cart"],
+        "summary": "Add item to cart / Səbətə element əlavə et",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["productId", "quantity"],
+                "properties": {
+                  "productId": {
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item added to cart / Element səbətə əlavə edildi"
+          },
+          "400": {
+            "description": "Bad request / Yanlış sorğu"
+          },
+          "401": {
+            "description": "Unauthorized / Yetkisiz"
+          }
+        }
+      }
+    },
+    "/v1/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Get all categories / Bütün kateqoriyaları əldə et",
+        "responses": {
+          "200": {
+            "description": "Categories retrieved / Kateqoriyalar əldə edildi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search products / Məhsulları axtar",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query / Axtarış sorğusu"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 12
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results / Axtarış nəticələri",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register new user / Yeni istifadəçi qeydiyyatı",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created / İstifadəçi yaradıldı"
+          },
+          "400": {
+            "description": "Bad request / Yanlış sorğu"
+          }
+        }
+      }
+    },
+    "/shipping/rates": {
+      "post": {
+        "tags": ["Shipping"],
+        "summary": "Calculate shipping rates / Çatdırılma tariflərini hesabla",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["from", "to", "weight", "value"],
+                "properties": {
+                  "from": {
+                    "type": "object",
+                    "required": ["street", "city", "state", "zipCode", "country"],
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zipCode": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "to": {
+                    "type": "object",
+                    "required": ["street", "city", "state", "zipCode", "country"],
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "zipCode": {
+                        "type": "string"
+                      },
+                      "country": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "weight": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "dimensions": {
+                    "type": "object",
+                    "properties": {
+                      "length": {
+                        "type": "number"
+                      },
+                      "width": {
+                        "type": "number"
+                      },
+                      "height": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "value": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shipping rates calculated / Çatdırılma tarifləri hesablandı",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string"
+                          },
+                          "service": {
+                            "type": "string"
+                          },
+                          "cost": {
+                            "type": "number"
+                          },
+                          "estimatedDays": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request / Yanlış sorğu"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check / Sağlamlıq yoxlaması",
+        "responses": {
+          "200": {
+            "description": "Service is healthy / Xidmət sağlamdır",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "database": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "connected"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

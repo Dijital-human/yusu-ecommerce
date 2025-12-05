@@ -4,8 +4,10 @@
  * Bu route müəyyən kateqoriya haqqında ətraflı məlumat almağı idarə edir
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { NextRequest } from "next/server";
+import { handleApiError } from "@/lib/api/error-handler";
+import { successResponse } from "@/lib/api/response";
+import { getCategory } from "@/services/category.service";
 
 export async function GET(
   request: NextRequest,
@@ -15,42 +17,9 @@ export async function GET(
     const resolvedParams = await params;
     const categoryId = resolvedParams.id;
 
-    // Fetch category with product count / Məhsul sayı ilə kateqoriyanı al
-    const category = await prisma.category.findUnique({
-      where: {
-        id: categoryId,
-        isActive: true,
-      },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { error: "Category not found / Kateqoriya tapılmadı" },
-        { status: 404 }
-      );
-    }
-
-    // Get product count for this category / Bu kateqoriya üçün məhsul sayını al
-    const productCount = await prisma.product.count({
-      where: {
-        categoryId: categoryId,
-        isActive: true,
-      },
-    });
-
-    // Get price range for this category / Bu kateqoriya üçün qiymət aralığını al
-    const priceStats = await prisma.product.aggregate({
-      where: {
-        categoryId: categoryId,
-        isActive: true,
-      },
-      _min: {
-        price: true,
-      },
-      _max: {
-        price: true,
-      },
-    });
+    // Get category with stats using service layer / Service layer istifadə edərək statistikalar ilə kateqoriyanı al
+    const result = await getCategory(categoryId, true);
+    const { category, stats } = result as { category: any; stats: { productCount: number; minPrice: number; maxPrice: number } };
 
     // Format response / Cavabı formatla
     const response = {
@@ -58,21 +27,20 @@ export async function GET(
       name: category.name,
       description: category.description,
       image: category.image,
-      productCount,
+      productCount: stats.productCount,
       isActive: category.isActive,
       parentId: category.parentId,
-      minPrice: priceStats._min.price ? Number(priceStats._min.price) : 0,
-      maxPrice: priceStats._max.price ? Number(priceStats._max.price) : 1000,
+      minPrice: stats.minPrice,
+      maxPrice: stats.maxPrice,
       createdAt: category.createdAt.toISOString(),
       updatedAt: category.updatedAt.toISOString(),
     };
 
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Error fetching category:", error);
-    return NextResponse.json(
-      { error: "Internal server error / Daxili server xətası" },
-      { status: 500 }
-    );
+    return successResponse(response);
+  } catch (error: any) {
+    if (error.message?.includes("not found") || error.message?.includes("tapılmadı")) {
+      return successResponse(null, error.message);
+    }
+    return handleApiError(error, "fetch category");
   }
 }

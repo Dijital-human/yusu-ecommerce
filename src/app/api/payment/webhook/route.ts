@@ -5,8 +5,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import Stripe from "stripe";
+import { logger } from "@/lib/utils/logger";
+import { updateProductStock } from "@/lib/inventory/inventory-manager";
+import { getOrderWithBasic } from "@/lib/db/queries/order-queries";
+import { updateOrderPaymentStatus } from "@/services/order.service";
+import { handleApiError } from "@/lib/api/error-handler";
 
 // Stripe configuration - only initialize if API key is available
 // Stripe konfiqurasiyası - yalnız API açarı mövcud olduqda başlat
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error("Webhook signature verification failed:", err);
+      logger.error("Webhook signature verification failed", err);
       return NextResponse.json(
         { error: "Invalid signature / Yanlış imza" },
         { status: 400 }
@@ -65,16 +69,14 @@ export async function POST(request: NextRequest) {
         break;
       
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.info(`Unhandled event type: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
-    return NextResponse.json(
-      { error: "Webhook processing failed / Webhook emalı uğursuz" },
-      { status: 500 }
-    );
+    logger.error("Webhook error", error);
+    // Use standardized error handling / Standartlaşdırılmış error handling istifadə et
+    return handleApiError(error, "process webhook");
   }
 }
 
@@ -84,48 +86,41 @@ async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
     const orderId = paymentIntent.metadata.orderId;
     
     if (!orderId) {
-      console.error("No order ID in payment intent metadata");
+      logger.error("No order ID in payment intent metadata", undefined, { paymentIntentId: paymentIntent.id });
       return;
     }
 
-    // Update order status / Sifariş statusunu yenilə
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "CONFIRMED",
-        paymentStatus: "PAID",
-        paidAt: new Date(),
-      },
+    // Update order status using service layer / Service layer istifadə edərək sifariş statusunu yenilə
+    await updateOrderPaymentStatus(orderId, {
+      status: "CONFIRMED",
+      paymentStatus: "PAID",
+      paidAt: new Date(),
     });
 
-    // Update product stock / Məhsul stokunu yenilə
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
-
-    if (order) {
-      for (const item of order.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity,
-            },
-          },
-        });
-      }
+    // Update product stock using inventory manager / Inventory manager istifadə edərək məhsul stokunu yenilə
+    // Get order using query helper / Query helper ilə sifarişi al
+    const order = await getOrderWithBasic(orderId);
+    
+    if (!order) {
+      logger.error("Order not found in webhook / Webhook-da sifariş tapılmadı", { orderId });
+      return NextResponse.json({ received: true });
     }
 
-    console.log(`Payment succeeded for order ${orderId}`);
+    // Update stock for each item / Hər element üçün stoku yenilə
+    for (const item of order.items) {
+      await updateProductStock(
+        item.productId,
+        item.quantity,
+        'decrement',
+        `Order ${orderId} payment confirmed / Sifariş ${orderId} ödənişi təsdiq edildi`
+      );
+    }
+
+    const succeededOrderId = paymentIntent.metadata.orderId;
+    logger.info(`Payment succeeded for order ${succeededOrderId}`, { orderId: succeededOrderId, paymentIntentId: paymentIntent.id });
   } catch (error) {
-    console.error("Error handling payment success:", error);
+    const errorOrderId = paymentIntent.metadata.orderId;
+    logger.error("Error handling payment success", error, { orderId: errorOrderId, paymentIntentId: paymentIntent.id });
   }
 }
 
@@ -135,22 +130,21 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
     const orderId = paymentIntent.metadata.orderId;
     
     if (!orderId) {
-      console.error("No order ID in payment intent metadata");
+      logger.error("No order ID in payment intent metadata", undefined, { paymentIntentId: paymentIntent.id });
       return;
     }
 
-    // Update order status / Sifariş statusunu yenilə
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "PAYMENT_FAILED",
-        paymentStatus: "FAILED",
-      },
+    // Update order status using service layer / Service layer istifadə edərək sifariş statusunu yenilə
+    await updateOrderPaymentStatus(orderId, {
+      status: "PAYMENT_FAILED",
+      paymentStatus: "FAILED",
     });
 
-    console.log(`Payment failed for order ${orderId}`);
+    const failedOrderId = paymentIntent.metadata.orderId;
+    logger.info(`Payment failed for order ${failedOrderId}`, { orderId: failedOrderId, paymentIntentId: paymentIntent.id });
   } catch (error) {
-    console.error("Error handling payment failure:", error);
+    const errorOrderId = paymentIntent.metadata.orderId;
+    logger.error("Error handling payment failure", error, { orderId: errorOrderId, paymentIntentId: paymentIntent.id });
   }
 }
 
@@ -160,21 +154,20 @@ async function handlePaymentCanceled(paymentIntent: Stripe.PaymentIntent) {
     const orderId = paymentIntent.metadata.orderId;
     
     if (!orderId) {
-      console.error("No order ID in payment intent metadata");
+      logger.error("No order ID in payment intent metadata", undefined, { paymentIntentId: paymentIntent.id });
       return;
     }
 
-    // Update order status / Sifariş statusunu yenilə
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: "CANCELLED",
-        paymentStatus: "CANCELED",
-      },
+    // Update order status using service layer / Service layer istifadə edərək sifariş statusunu yenilə
+    await updateOrderPaymentStatus(orderId, {
+      status: "CANCELLED",
+      paymentStatus: "CANCELED",
     });
 
-    console.log(`Payment canceled for order ${orderId}`);
+    const canceledOrderId = paymentIntent.metadata.orderId;
+    logger.info(`Payment canceled for order ${canceledOrderId}`, { orderId: canceledOrderId, paymentIntentId: paymentIntent.id });
   } catch (error) {
-    console.error("Error handling payment cancellation:", error);
+    const errorOrderId = paymentIntent.metadata.orderId;
+    logger.error("Error handling payment cancellation", error, { orderId: errorOrderId, paymentIntentId: paymentIntent.id });
   }
 }

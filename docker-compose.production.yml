@@ -1,0 +1,296 @@
+# Production Docker Compose Configuration / Production Docker Compose Konfiqurasiyası
+# Complete production setup with all services / Bütün xidmətlərlə tam production quraşdırması
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database / PostgreSQL Veritabanı
+  postgres:
+    image: postgres:15-alpine
+    container_name: yusu_postgres_prod
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-yusu_production}
+      POSTGRES_USER: ${DATABASE_USER:-yusu_admin}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-yusu_admin} -d ${DATABASE_NAME:-yusu_production}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - yusu_network
+
+  # Redis Cache / Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: yusu_redis_prod
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - yusu_network
+
+  # Main E-commerce Application / Əsas E-ticarət Tətbiqi
+  yusu_ecommerce:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: yusu_ecommerce_prod
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DATABASE_USER:-yusu_admin}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-yusu_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - EMAIL_SERVER_HOST=${EMAIL_SERVER_HOST}
+      - EMAIL_SERVER_PORT=${EMAIL_SERVER_PORT}
+      - EMAIL_SERVER_USER=${EMAIL_SERVER_USER}
+      - EMAIL_SERVER_PASSWORD=${EMAIL_SERVER_PASSWORD}
+      - EMAIL_FROM=${EMAIL_FROM}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - yusu_network
+
+  # Admin Dashboard / Admin Dashboard
+  yusu_admin:
+    build:
+      context: ../yusu-admin
+      dockerfile: Dockerfile.prod
+    container_name: yusu_admin_prod
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DATABASE_USER:-yusu_admin}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-yusu_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${ADMIN_URL}
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Seller Dashboard / Satıcı Dashboard
+  yusu_seller:
+    build:
+      context: ../yusu-seller
+      dockerfile: Dockerfile.prod
+    container_name: yusu_seller_prod
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DATABASE_USER:-yusu_admin}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-yusu_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${SELLER_URL}
+    ports:
+      - "3002:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Courier Dashboard / Kuryer Dashboard
+  yusu_courier:
+    build:
+      context: ../yusu-courier
+      dockerfile: Dockerfile.prod
+    container_name: yusu_courier_prod
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${DATABASE_USER:-yusu_admin}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-yusu_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${COURIER_URL}
+    ports:
+      - "3003:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Nginx Reverse Proxy / Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: yusu_nginx_prod
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - yusu_ecommerce
+      - yusu_admin
+      - yusu_seller
+      - yusu_courier
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Monitoring with Prometheus / Prometheus ilə Monitorinq
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: yusu_prometheus_prod
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Monitoring with Grafana / Grafana ilə Monitorinq
+  grafana:
+    image: grafana/grafana:latest
+    container_name: yusu_grafana_prod
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Log Management with ELK Stack / ELK Stack ilə Log İdarəetməsi
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: yusu_elasticsearch_prod
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: yusu_logstash_prod
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logs:/usr/share/logstash/logs
+    ports:
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: yusu_kibana_prod
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+  # Backup Service / Backup Xidməti
+  backup:
+    image: postgres:15-alpine
+    container_name: yusu_backup_prod
+    environment:
+      - PGPASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh
+    command: >
+      sh -c "
+        apk add --no-cache postgresql-client &&
+        chmod +x /backup.sh &&
+        while true; do
+          /backup.sh
+          sleep 86400
+        done
+      "
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - yusu_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  yusu_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

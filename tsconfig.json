@@ -25,7 +25,11 @@
       "@/lib/*": ["./src/lib/*"],
       "@/types/*": ["./src/types/*"],
       "@/hooks/*": ["./src/hooks/*"],
-      "@/store/*": ["./src/store/*"]
+      "@/store/*": ["./src/store/*"],
+      "@yusu/shared-db": ["../packages/shared-db/src"],
+      "@yusu/shared-utils": ["../packages/shared-utils/src"],
+      "@yusu/shared-types": ["../packages/shared-types/src"],
+      "@yusu/ui-components": ["../packages/shared-ui-components/src"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

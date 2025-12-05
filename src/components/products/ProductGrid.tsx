@@ -7,6 +7,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ProductCard } from "./ProductCard";
 import { Button } from "@/components/ui/Button";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -51,6 +53,8 @@ export function ProductGrid({
   onLoadMore,
   hasMore = false,
 }: ProductGridProps) {
+  const t = useTranslations('common');
+  const router = useRouter();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const handleLoadMore = async () => {
@@ -113,8 +117,8 @@ export function ProductGrid({
         <p className="text-gray-600 mb-4">
           Try adjusting your search or filter criteria / Axtarış və ya filtr meyarlarınızı dəyişdirin
         </p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          Refresh / Yenilə
+        <Button variant="outline" onClick={() => router.refresh()}>
+          {t('refresh')}
         </Button>
       </div>
     );

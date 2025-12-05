@@ -18,7 +18,8 @@ import {
   ArrowLeft,
   User
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -40,6 +41,8 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const { can, canAccess } = usePermissions();
+  const t = useTranslations("common");
+  const tAuth = useTranslations("auth");
 
   // Show loading state / Yükləmə vəziyyətini göstər
   if (isLoading) {
@@ -47,7 +50,7 @@ export function ProtectedRoute({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading... / Yüklənir...</p>
+          <p className="text-gray-600">{t("loading")}...</p>
         </div>
       </div>
     );
@@ -61,20 +64,20 @@ export function ProtectedRoute({
           <CardContent className="p-8 text-center">
             <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Authentication Required / Autentifikasiya Tələb Olunur
+              {tAuth("authenticationRequired")}
             </h2>
             <p className="text-gray-600 mb-4">
-              Please sign in to access this page / Bu səhifəyə daxil olmaq üçün giriş edin
+              {tAuth("pleaseSignIn")}
             </p>
             <div className="space-y-2">
               <Button asChild className="w-full">
                 <Link href="/auth/signin">
-                  Sign In / Giriş Et
+                  {tAuth("signIn")}
                 </Link>
               </Button>
               <Button variant="outline" asChild className="w-full">
                 <Link href="/">
-                  Go Home / Ana Səhifəyə Get
+                  {t("goHome")}
                 </Link>
               </Button>
             </div>
@@ -96,25 +99,25 @@ export function ProtectedRoute({
             <CardContent className="p-8 text-center">
               <Shield className="h-12 w-12 text-red-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Access Denied / Giriş Qadağandır
+                {tAuth("accessDenied")}
               </h2>
               <p className="text-gray-600 mb-4">
-                You don't have the required role to access this page / Bu səhifəyə daxil olmaq üçün tələb olunan rolunuz yoxdur
+                {tAuth("noPermission")}
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                Required: {roles.join(" or ")} / Tələb olunan: {roles.join(" və ya ")}
+                Required: {roles.join(" or ")}
                 <br />
-                Your role: {user.role} / Sizin rolunuz: {user.role}
+                Your role: {user.role}
               </p>
               <div className="space-y-2">
                 <Button asChild className="w-full">
                   <Link href="/">
-                    Go Home / Ana Səhifəyə Get
+                    {t("goHome")}
                   </Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
                   <Link href="/profile">
-                    View Profile / Profili Gör
+                    {t("viewProfile")}
                   </Link>
                 </Button>
               </div>
@@ -136,25 +139,23 @@ export function ProtectedRoute({
             <CardContent className="p-8 text-center">
               <AlertTriangle className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Permission Denied / İcazə Qadağandır
+                {tAuth("accessDenied")}
               </h2>
               <p className="text-gray-600 mb-4">
-                You don't have permission to perform this action / Bu əməliyyatı yerinə yetirmək icazəniz yoxdur
+                {tAuth("noPermission")}
               </p>
               <p className="text-sm text-gray-500 mb-4">
                 Required: {requiredPermission.action} on {requiredPermission.resource}
-                <br />
-                Tələb olunan: {requiredPermission.resource} üzərində {requiredPermission.action}
               </p>
               <div className="space-y-2">
                 <Button asChild className="w-full">
                   <Link href="/">
-                    Go Home / Ana Səhifəyə Get
+                    {t("goHome")}
                   </Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
                   <Link href="/profile">
-                    View Profile / Profili Gör
+                    {t("viewProfile")}
                   </Link>
                 </Button>
               </div>
