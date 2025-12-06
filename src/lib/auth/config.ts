@@ -16,7 +16,7 @@ import { UserRole } from "@/types";
 
 export const authOptions: NextAuthOptions = {
   // Database adapter / Veritabanı adapter-i
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as any),
   
   // Secret key / Gizli açar
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key-minimum-32-characters-needed",
@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
           console.log("🔍 [Auth] Attempting login for:", normalizedEmail);
           
           // Find user in database / Veritabanında istifadəçini tap
-          const user = await prisma.user.findUnique({
+          const user = await prisma.users.findUnique({
             where: { email: normalizedEmail },
             select: {
               id: true,
@@ -138,7 +138,7 @@ export const authOptions: NextAuthOptions = {
           // Check email verification in production / Production-da email təsdiqini yoxla
           // Note: For development, we allow unverified emails / Qeyd: Development üçün təsdiqlənməmiş email-lərə icazə veririk
           if (process.env.NODE_ENV === 'production' && process.env.REQUIRE_EMAIL_VERIFICATION === 'true') {
-            const userWithVerification = await prisma.user.findUnique({
+            const userWithVerification = await prisma.users.findUnique({
               where: { email: normalizedEmail },
               select: { emailVerified: true },
             });
@@ -248,7 +248,7 @@ export const authOptions: NextAuthOptions = {
         if (account?.provider === "credentials") {
           // For credentials provider, check if user exists and is active
           // Kimlik bilgiləri provayderi üçün istifadəçinin mövcudluğunu və aktivliyini yoxla
-          const existingUser = await prisma.user.findUnique({
+          const existingUser = await prisma.users.findUnique({
             where: { email: user.email! },
           });
           
@@ -268,7 +268,7 @@ export const authOptions: NextAuthOptions = {
           // Check database connection and get existing user / Veritabanı əlaqəsini yoxla və mövcud istifadəçini al
           let existingUser;
           try {
-            existingUser = await prisma.user.findUnique({
+            existingUser = await prisma.users.findUnique({
               where: { email: user.email! },
             });
             console.log("Database query successful, existing user:", existingUser);
@@ -303,7 +303,7 @@ export const authOptions: NextAuthOptions = {
             // Create new user for OAuth / OAuth üçün yeni istifadəçi yarat
             console.log("Creating new user for OAuth");
             try {
-              const newUser = await prisma.user.create({
+              const newUser = await (prisma.users as any).create({
                 data: {
                   email: user.email!,
                   name: user.name,
@@ -326,7 +326,7 @@ export const authOptions: NextAuthOptions = {
             console.log("User exists, updating if needed");
             try {
               if (existingUser.role !== userRole) {
-                await prisma.user.update({
+                await prisma.users.update({
                   where: { email: user.email! },
                   data: { role: userRole as UserRole },
                 });
