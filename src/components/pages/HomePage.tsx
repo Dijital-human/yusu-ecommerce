@@ -22,6 +22,7 @@ import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { RecentlyViewed } from "@/components/products/RecentlyViewed";
 import { DynamicHomepage } from "@/components/homepage/DynamicHomepage";
 import { ProductRecommendations } from "@/components/products/ProductRecommendations";
+import { ProductCarouselSection } from "@/components/carousel";
 import { useSession } from "next-auth/react";
 import { 
   Star, 
@@ -741,6 +742,71 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Trendyol-style Product Carousels / Trendyol tipli Məhsul Karuselləri */}
+      {approvedProducts.length > 0 && (
+        <>
+          {/* Best Sellers Carousel / Ən çox satılanlar Karuseli */}
+          <ProductCarouselSection
+            title={t("bestSellers") || "Ən çox satılanlar"}
+            products={approvedProducts.slice(0, 12).map(p => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: Array.isArray(p.images) ? p.images[0] : p.images || "/placeholder.png",
+              rating: p.averageRating,
+              reviewCount: p.reviewCount,
+              sellerId: p.seller?.id,
+              sellerName: p.seller?.name,
+            }))}
+            seeAllLink="/products?sort=popular"
+            backgroundColor="white"
+            autoScroll={true}
+            showDots={true}
+          />
+
+          {/* New Arrivals Carousel / Yeni gələnlər Karuseli */}
+          <ProductCarouselSection
+            title={t("newArrivals") || "Yeni gələnlər"}
+            products={approvedProducts.slice(0, 10).map(p => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: Array.isArray(p.images) ? p.images[0] : p.images || "/placeholder.png",
+              rating: p.averageRating,
+              reviewCount: p.reviewCount,
+              badge: "Yeni",
+              badgeColor: "green" as const,
+            }))}
+            seeAllLink="/products?sort=newest"
+            backgroundColor="gray"
+          />
+
+          {/* Deals & Discounts Carousel / Endirimlər Karuseli */}
+          {approvedProducts.filter(p => p.originalPrice && p.originalPrice > p.price).length > 0 && (
+            <ProductCarouselSection
+              title={t("deals") || "Endirimli məhsullar"}
+              products={approvedProducts
+                .filter(p => p.originalPrice && p.originalPrice > p.price)
+                .slice(0, 12)
+                .map(p => ({
+                  id: p.id,
+                  name: p.name,
+                  price: p.price,
+                  originalPrice: p.originalPrice,
+                  image: Array.isArray(p.images) ? p.images[0] : p.images || "/placeholder.png",
+                  rating: p.averageRating,
+                  reviewCount: p.reviewCount,
+                }))}
+              seeAllLink="/deals"
+              backgroundColor="gradient"
+              autoScroll={true}
+            />
+          )}
+        </>
+      )}
 
       {/* Recently Viewed Products / Son Baxılan Məhsullar */}
       <RecentlyViewed />
