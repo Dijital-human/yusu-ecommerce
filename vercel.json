@@ -1,46 +1,15 @@
 {
   "version": 2,
-  "name": "yusu-ecommerce",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
+  "framework": "nextjs",
+  "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production",
     "NEXTAUTH_URL": "https://ulustore.com",
     "NEXT_PUBLIC_APP_URL": "https://ulustore.com",
     "NEXT_PUBLIC_SELLER_URL": "https://seller.ulustore.com",
     "NEXT_PUBLIC_COURIER_URL": "https://courier.ulustore.com",
-    "NEXT_PUBLIC_ADMIN_URL": "https://admin.ulustore.com",
-    "NEXTAUTH_SECRET": "@nextauth-secret",
-    "DATABASE_URL": "@database-url",
-    "RESEND_API_KEY": "@resend-api-key",
-    "EMAIL_FROM": "noreply@ulustore.com",
-    "TWILIO_ACCOUNT_SID": "@twilio-account-sid",
-    "TWILIO_AUTH_TOKEN": "@twilio-auth-token",
-    "TWILIO_PHONE_NUMBER": "@twilio-phone-number"
+    "NEXT_PUBLIC_ADMIN_URL": "https://admin.ulustore.com"
   },
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "maxDuration": 30,
-      "memory": 1024,
-      "concurrency": 100
-    }
-  },
-  "regions": ["iad1"],
-  "framework": "nextjs",
   "crons": [
     {
       "path": "/api/cache/warm",
@@ -49,19 +18,6 @@
     {
       "path": "/api/cache/warm?type=popular",
       "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/backup/schedule?type=daily",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/backup/schedule?type=weekly",
-      "schedule": "0 3 * * 0"
-    },
-    {
-      "path": "/api/backup/schedule?type=monthly",
-      "schedule": "0 4 1 * *"
     }
   ]
 }
-
