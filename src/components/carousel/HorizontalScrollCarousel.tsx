@@ -313,7 +313,12 @@ export function HorizontalScrollCarousel({
             gap: `${gap}px`,
             scrollbarWidth: "none",
             msOverflowStyle: "none",
-          }}
+            // CSS custom properties for responsive widths
+            "--carousel-gap": `${gap}px`,
+            "--items-mobile": itemsPerView.mobile || 2,
+            "--items-tablet": itemsPerView.tablet || 3,
+            "--items-desktop": itemsPerView.desktop || 5,
+          } as React.CSSProperties}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -329,24 +334,10 @@ export function HorizontalScrollCarousel({
                 "flex-shrink-0 snap-start",
                 "transition-transform duration-300",
                 isDragging ? "scale-[0.98]" : "hover:scale-[1.02]",
+                "carousel-item",
                 itemClassName
               )}
-              style={{
-                width: `calc((100% - ${gap * ((itemsPerView.mobile || 2) - 1)}px) / ${itemsPerView.mobile || 2})`,
-              }}
             >
-              <style jsx>{`
-                @media (min-width: 768px) {
-                  div {
-                    width: calc((100% - ${gap * ((itemsPerView.tablet || 3) - 1)}px) / ${itemsPerView.tablet || 3}) !important;
-                  }
-                }
-                @media (min-width: 1024px) {
-                  div {
-                    width: calc((100% - ${gap * ((itemsPerView.desktop || 5) - 1)}px) / ${itemsPerView.desktop || 5}) !important;
-                  }
-                }
-              `}</style>
               {child}
             </div>
           ))}
@@ -372,7 +363,7 @@ export function HorizontalScrollCarousel({
         </div>
       )}
 
-      {/* Hide scrollbar styles / Sürüşmə panelini gizlət */}
+      {/* Hide scrollbar styles + Responsive carousel items / Sürüşmə panelini gizlət + Responsive karusel elementləri */}
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
@@ -380,6 +371,19 @@ export function HorizontalScrollCarousel({
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        .carousel-item {
+          width: calc((100% - (var(--carousel-gap, 16px) * (var(--items-mobile, 2) - 1))) / var(--items-mobile, 2));
+        }
+        @media (min-width: 768px) {
+          .carousel-item {
+            width: calc((100% - (var(--carousel-gap, 16px) * (var(--items-tablet, 3) - 1))) / var(--items-tablet, 3));
+          }
+        }
+        @media (min-width: 1024px) {
+          .carousel-item {
+            width: calc((100% - (var(--carousel-gap, 16px) * (var(--items-desktop, 5) - 1))) / var(--items-desktop, 5));
+          }
         }
       `}</style>
     </div>
