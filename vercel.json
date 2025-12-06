@@ -17,7 +17,7 @@
     },
     {
       "path": "/api/cache/warm?type=popular",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron",
