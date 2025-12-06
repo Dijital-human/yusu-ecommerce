@@ -8,6 +8,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
@@ -52,6 +53,7 @@ export default function RootLayout({
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
+        <SpeedInsights />
       </body>
     </html>
   );
