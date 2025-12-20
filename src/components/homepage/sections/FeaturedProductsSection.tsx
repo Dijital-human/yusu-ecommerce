@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Star, ShoppingCart, Heart } from "lucide-react";
 import { formatCurrency } from "@yusu/shared-utils";
 
+
 interface FeaturedProductsSectionProps {
   title?: string;
   subtitle?: string;
