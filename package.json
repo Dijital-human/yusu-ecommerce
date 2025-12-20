@@ -27,6 +27,15 @@
     "load-test:artillery": "artillery run scripts/load-test/artillery-config.yml"
   },
   "dependencies": {
+    "@ulustore/db": "file:./packages/ulustore-db",
+    "@ulustore/types": "file:./packages/ulustore-types",
+    "@ulustore/utils": "file:./packages/ulustore-utils",
+    "@ulustore/constants": "file:./packages/ulustore-constants",
+    "@ulustore/email": "file:./packages/ulustore-email",
+    "@ulustore/i18n": "file:./packages/ulustore-i18n",
+    "@ulustore/middleware": "file:./packages/ulustore-middleware",
+    "@ulustore/messaging": "file:./packages/ulustore-messaging",
+    "@ulustore/ui": "file:./packages/ulustore-ui",
     "@hookform/resolvers": "^5.2.2",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@opentelemetry/api": "^1.9.0",
