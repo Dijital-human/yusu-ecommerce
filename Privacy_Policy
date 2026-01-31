@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Flappy Bird</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 { color: #007AFF; }
+        h2 { color: #007AFF; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Privacy Policy</h1>
+    <p><em>Last updated: January 28, 2026</em></p>
+    
+    <h2>Introduction</h2>
+    <p>Flappy Bird ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and share information when you use our mobile application.</p>
+    
+    <h2>Information We Collect</h2>
+    <p>We collect the following types of information:</p>
+    
+    <h3>Device ID</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Advertising and marketing</li>
+        <li><strong>Used for Tracking:</strong> Yes</li>
+        <li><strong>Third-Party:</strong> Google AdMob</li>
+    </ul>
+    
+    <h3>Advertising Data</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Third-party advertising</li>
+        <li><strong>Used for Tracking:</strong> Yes</li>
+        <li><strong>Third-Party:</strong> Google AdMob</li>
+    </ul>
+    
+    <h3>Product Interaction Data</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Analytics</li>
+        <li><strong>Used for Tracking:</strong> No</li>
+        <li><strong>Third-Party:</strong> Firebase Analytics</li>
+    </ul>
+    
+    <h3>Crash Data</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Crash reporting</li>
+        <li><strong>Used for Tracking:</strong> No</li>
+        <li><strong>Third-Party:</strong> Firebase Crashlytics</li>
+    </ul>
+    
+    <h2>Third-Party Services</h2>
+    <p>We use Google AdMob for advertisements and Firebase for analytics and crash reporting.</p>
+    
+    <h2>Contact Us</h2>
+    <p>If you have questions, contact us at: [Your email]</p>
+    
+    <p><small>© 2026 Famil Mustafayev. All rights reserved.</small></p>
+</body>
+</html>
